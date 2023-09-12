@@ -17,7 +17,7 @@ add_library(Engine
 
 
 target_link_libraries(Engine
-        PRIVATE
+        PUBLIC
         glad::glad
         glfw
         glm::glm

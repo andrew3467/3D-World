@@ -6,12 +6,14 @@
 #define APPLICATION_RENDERER_H
 
 
-class Renderer {
-public:
-    static void Draw(){
+#include "Shader.h"
 
-    }
-};
+namespace Renderer {
+    class Renderer {
+    public:
+        static void DrawSquare(const Shader& shader);
+    };
+}
 
 
 #endif //APPLICATION_RENDERER_H

@@ -23,20 +23,20 @@
 namespace Renderer {
     class Shader {
     private:
-        unsigned int m_RendererID;
+        unsigned int m_Handle;
         mutable std::unordered_map<std::string, int> m_UniformCache;
 
     public:
         Shader();
 
-        Shader(const char *vertPath, const char *fragPath);
+        Shader(const char *path);
 
         ~Shader();
 
     private:
-        unsigned int createShaderProgram(const char *vertPath, const char *fragPath);
+        unsigned int createShaderProgram(const char *path);
 
-        std::string readSourceFile(const char *srcPath);
+        std::vector<unsigned int> parseShader(const char *path);
 
         unsigned int createShader(unsigned int SHADER_TYPE, const char *src);
 
@@ -47,7 +47,7 @@ namespace Renderer {
 
         void unbind() const;
 
-        inline unsigned int getID() const { return m_RendererID; }
+        inline unsigned int getID() const { return m_Handle; }
 
 //Uniforms
     public:
@@ -70,6 +70,7 @@ namespace Renderer {
         void setVec2(const std::string &name, float x, float y);
 
         void setMat4(const std::string &name, glm::mat4 v);
+
     };
 }
 

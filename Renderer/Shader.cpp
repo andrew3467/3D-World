@@ -2,6 +2,9 @@
 // Created by apgra on 9/12/2023.
 //
 
+#define VERTEX_INDEX 0
+#define FRAGMENT_INDEX 1
+
 #include "Shader.h"
 
 
@@ -10,24 +13,20 @@
 
 
 namespace Renderer {
-    Shader::Shader() : m_RendererID(0) {
+    Shader::Shader() : m_Handle(0) {
 
     }
 
-    Shader::Shader(const char *vertPath, const char *fragPath) {
-        m_RendererID = createShaderProgram(vertPath, fragPath);
+    Shader::Shader(const char *path) {
+        m_Handle = createShaderProgram(path);
     }
 
-    unsigned int Shader::createShaderProgram(const char *vertPath, const char *fragPath) {
-        unsigned int vert, frag;
-        vert = createShader(GL_VERTEX_SHADER, readSourceFile(vertPath).c_str());
-        frag = createShader(GL_FRAGMENT_SHADER, readSourceFile(fragPath).c_str());
-
-
+    unsigned int Shader::createShaderProgram(const char *path) {
         unsigned int id = glCreateProgram();
-        glAttachShader(id, vert);
-        glAttachShader(id, frag);
+        auto shaders = parseShader(path); //Vertex: 0 Fragment: 1
 
+        glAttachShader(id, shaders[0]);
+        glAttachShader(id, shaders[1]);
         glLinkProgram(id);
 
         int success;
@@ -39,50 +38,68 @@ namespace Renderer {
         }
 
         //Cleanup
-        glDeleteShader(vert);
-        glDeleteShader(frag);
+        glDeleteShader(shaders[0]);
+        glDeleteShader(shaders[1]);
 
         return id;
     }
 
-    unsigned int Shader::createShader(unsigned int SHADER_TYPE, const char *src) {
-        if (src == nullptr) {
-            throw std::runtime_error("ERROR: Shader received null source");
+    std::vector<unsigned int> Shader::parseShader(const char *path) {
+        std::vector<unsigned int> shaders(2);
+        std::stringstream ss;
+        std::ifstream file(path);
+
+
+        std::string line;
+        std::string src;
+        int curShader = 0;
+
+        while (std::getline(file, line)) {
+            if (line == "#vertex") {
+                curShader = VERTEX_INDEX;
+                src.clear();
+            } else if (line == "#fragment") {
+                shaders[curShader] = createShader(GL_VERTEX_SHADER, src.c_str());
+                curShader = FRAGMENT_INDEX;
+                src.clear();
+            } else {
+                src.append(line + "\n");
+            }
         }
+
+
+        //Assumes fragment is final shader
+        shaders[curShader] = createShader(GL_FRAGMENT_SHADER, src.c_str());
+
+        return shaders;
+    }
+
+
+    unsigned int Shader::createShader(unsigned int SHADER_TYPE, const char *src) {
         unsigned int shader = glCreateShader(SHADER_TYPE);
         glShaderSource(shader, 1, &src, nullptr);
         glCompileShader(shader);
 
+        std::cout << src << "\n";
 
         int success;
         char infoLog[512];
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (!success) {
             glGetShaderInfoLog(shader, 512, nullptr, infoLog);
-            std::cout << "ERROR::" << ((SHADER_TYPE == GL_VERTEX_SHADER) ? "VERTEX" : "FRAGMENT")
-                      << "::SHADER::COMPILATION_FAILED\n" << infoLog << "\n";
+            throw std::exception(std::string("ERROR::").
+            append((SHADER_TYPE == GL_VERTEX_SHADER) ? "VERTEX" : "FRAGMENT").
+            append("::SHADER::COMPILATION_FAILED\n").
+            append(infoLog).
+            append("\n").
+            c_str());
         }
 
         return shader;
     }
 
-    std::string Shader::readSourceFile(const char *srcPath) {
-        std::ifstream file;
-        std::stringstream stream;
-
-        try {
-            file.open(srcPath);
-            stream << file.rdbuf();
-        } catch (std::exception &e) {
-            throw std::runtime_error(e.what());
-        }
-
-
-        return stream.str();
-    }
-
     void Shader::bind() const {
-        glUseProgram(m_RendererID);
+        glUseProgram(m_Handle);
     }
 
     void Shader::unbind() const {
@@ -94,7 +111,7 @@ namespace Renderer {
             return m_UniformCache[name];
         }
 
-        int location = glGetUniformLocation(m_RendererID, name.c_str());
+        int location = glGetUniformLocation(m_Handle, name.c_str());
         m_UniformCache[name] = location;
 
         return location;
@@ -147,6 +164,6 @@ namespace Renderer {
 
 //Cleanup
     Shader::~Shader() {
-        glDeleteProgram(m_RendererID);
+        glDeleteProgram(m_Handle);
     }
 }

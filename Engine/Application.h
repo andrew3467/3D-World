@@ -7,6 +7,7 @@
 
 
 #include "Window.h"
+#include "../Renderer/Shader.h"
 
 namespace Engine {
     class Application {
@@ -18,6 +19,8 @@ namespace Engine {
         void onTick();
         void onRender();
         void onClose();
+
+        std::unique_ptr<Renderer::Shader> shader;
 
     private:
         std::unique_ptr<Window> m_Window;

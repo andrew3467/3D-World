@@ -13,8 +13,8 @@ add_library(Renderer
         Shader.h
 )
 
-target_link_libraries(Engine
-        PRIVATE
+target_link_libraries(Renderer
+        PUBLIC
         glad::glad
         glm::glm
 )
