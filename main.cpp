@@ -1,5 +1,15 @@
-#include "Engine/Window.h"
+#include <iostream>
+#include "Engine/Application.h"
 
 int main() {
-    Window window(1280, 720, "Testing");
+    Engine::Application app;
+
+    try{
+        app.Run();
+    }catch(std::exception& e){
+        std::cout << e.what() << "\n";
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
 }

@@ -3,8 +3,18 @@ project(Renderer)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 
 add_library(Renderer
         Renderer.cpp
         Renderer.h
+        Shader.cpp
+        Shader.h
+)
+
+target_link_libraries(Engine
+        PRIVATE
+        glad::glad
+        glm::glm
 )

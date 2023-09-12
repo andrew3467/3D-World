@@ -7,20 +7,45 @@
 
 
 #include <string>
+#include "glad/glad.h"
+#include <GLFW/glfw3.h>
 
 class Window {
+    struct DestroyglfwWin{
+
+        void operator()(GLFWwindow* ptr){
+            glfwDestroyWindow(ptr);
+        }
+
+    };
+
 private:
+    bool GlfwInitialized = false;
+    bool GladInitialized = false;
+
     unsigned int m_ID;
 
     int m_Width, m_Height;
     std::string m_Title;
 
+    GLFWwindow* m_Window;
+
+
+private:
+    void initGLFW();
+    void initGLAD();
 
 public:
     Window(int width, int height, std::string title);
     ~Window();
 
     Window(Window& other) = delete;
+
+    void tick() const;
+    bool shouldClose();
+
+    void setUserPointer(void* ptr);
+    void setKeyCallback(GLFWkeyfun callback);
 };
 
 

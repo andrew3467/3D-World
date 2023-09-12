@@ -3,8 +3,22 @@ project(Engine)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glad CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
+
 
 add_library(Engine
         Window.cpp
         Window.h
+        Application.cpp
+        Application.h
+)
+
+
+target_link_libraries(Engine
+        PRIVATE
+        glad::glad
+        glfw
+        glm::glm
 )

@@ -8,7 +8,9 @@
 
 class Renderer {
 public:
-    static void Draw();
+    static void Draw(){
+
+    }
 };
 
 
