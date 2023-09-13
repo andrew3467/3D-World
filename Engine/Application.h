@@ -8,6 +8,7 @@
 
 #include "Window.h"
 #include "../Renderer/Shader.h"
+#include "Camera.h"
 
 namespace Engine {
     class Application {
@@ -20,11 +21,18 @@ namespace Engine {
         void onRender();
         void onClose();
 
-        std::unique_ptr<Renderer::Shader> shader;
+
 
     private:
+        std::unique_ptr<Renderer::Shader> shader;
+
+        std::unique_ptr<Camera> m_Camera;
         std::unique_ptr<Window> m_Window;
 
+    public:
+        Camera* GetCamera() {return m_Camera.get();}
+
+    private:
 
         static void onKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
 

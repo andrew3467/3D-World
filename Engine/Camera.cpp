@@ -5,25 +5,30 @@
 #include "Camera.h"
 
 Camera::Camera(glm::vec3 initialPos, float moveSpeed)
-    : pos(initialPos), moveSpeed(moveSpeed) {
-    //Assumes first camera created is main camera
-    if(MAIN_CAMERA == nullptr){
-        MAIN_CAMERA = this;
-    }
+    : camPos(initialPos), moveSpeed(moveSpeed) {
+    //Assumes first m_Camera created is main m_Camera
+    //if(MAIN_CAMERA == nullptr){
+    //    MAIN_CAMERA = this;
+    //}
 }
 
 Camera::~Camera() {
 
 }
 
-glm::mat4 Camera::projection() {
-    return glm::mat4();
-}
-
-glm::mat4 Camera::view() {
-    return glm::mat4();
-}
-
-glm::mat4 Camera::viewProjection() {
-    return view() * projection();
+void Camera::move(Direction dir, float dt) {
+    switch(dir){
+        case Forward:
+            camPos += camFront * moveSpeed * dt;
+            break;
+        case Backward:
+            camPos -= camFront * moveSpeed * dt;
+            break;
+        case Right:
+            camPos += glm::normalize(glm::cross(camFront, camUp)) * moveSpeed * dt;
+            break;
+        case Left:
+            camPos -= glm::normalize(glm::cross(camFront, camUp)) * moveSpeed * dt;
+            break;
+    }
 }

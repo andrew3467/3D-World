@@ -9,6 +9,7 @@
 #include <string>
 #include "glad/glad.h"
 #include <GLFW/glfw3.h>
+#include <glm/vec2.hpp>
 
 class Window {
     struct DestroyglfwWin{
@@ -43,6 +44,8 @@ public:
 
     void tick() const;
     bool shouldClose();
+
+    glm::vec2 getSize() {return {m_Width, m_Height};}
 
     void setUserPointer(void* ptr);
     void setKeyCallback(GLFWkeyfun callback);
