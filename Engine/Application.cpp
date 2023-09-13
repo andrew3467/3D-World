@@ -37,17 +37,19 @@ namespace Engine {
     }
 
     void Application::onTick() {
-        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
 
 
         m_Window->tick();
     }
 
     void Application::onRender() {
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         shader->bind();
-        shader->setVec3("color", 0.1f, 0.5f, 0.8f);
+        shader->setVec3("color", 1.0f, 1.0f, 0.0f);
+
+        shader->setMat4("mvp", glm::mat4(1.0f));
 
         Renderer::Renderer::DrawSquare(*shader);
     }

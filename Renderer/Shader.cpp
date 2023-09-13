@@ -23,10 +23,14 @@ namespace Renderer {
 
     unsigned int Shader::createShaderProgram(const char *path) {
         unsigned int id = glCreateProgram();
+        unsigned int vert, frag;
         auto shaders = parseShader(path); //Vertex: 0 Fragment: 1
 
-        glAttachShader(id, shaders[0]);
-        glAttachShader(id, shaders[1]);
+        vert = createShader(GL_VERTEX_SHADER, shaders[0].c_str());
+        frag = createShader(GL_FRAGMENT_SHADER, shaders[1].c_str());
+
+        glAttachShader(id, vert);
+        glAttachShader(id, frag);
         glLinkProgram(id);
 
         int success;
@@ -38,14 +42,14 @@ namespace Renderer {
         }
 
         //Cleanup
-        glDeleteShader(shaders[0]);
-        glDeleteShader(shaders[1]);
+        glDeleteShader(vert);
+        glDeleteShader(frag);
 
         return id;
     }
 
-    std::vector<unsigned int> Shader::parseShader(const char *path) {
-        std::vector<unsigned int> shaders(2);
+    std::vector<std::string> Shader::parseShader(const char *path) {
+        std::vector<std::string> shaders(2);
         std::stringstream ss;
         std::ifstream file(path);
 
@@ -59,17 +63,16 @@ namespace Renderer {
                 curShader = VERTEX_INDEX;
                 src.clear();
             } else if (line == "#fragment") {
-                shaders[curShader] = createShader(GL_VERTEX_SHADER, src.c_str());
+                shaders[curShader] = src;
                 curShader = FRAGMENT_INDEX;
                 src.clear();
             } else {
-                src.append(line + "\n");
+                src.append(line + "\n" );
             }
         }
 
-
         //Assumes fragment is final shader
-        shaders[curShader] = createShader(GL_FRAGMENT_SHADER, src.c_str());
+        shaders[curShader] = src;
 
         return shaders;
     }
@@ -79,8 +82,6 @@ namespace Renderer {
         unsigned int shader = glCreateShader(SHADER_TYPE);
         glShaderSource(shader, 1, &src, nullptr);
         glCompileShader(shader);
-
-        std::cout << src << "\n";
 
         int success;
         char infoLog[512];

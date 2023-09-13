@@ -13,6 +13,8 @@ add_library(Engine
         Window.h
         Application.cpp
         Application.h
+        Camera.cpp
+        Camera.h
 )
 
 

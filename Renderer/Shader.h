@@ -36,7 +36,7 @@ namespace Renderer {
     private:
         unsigned int createShaderProgram(const char *path);
 
-        std::vector<unsigned int> parseShader(const char *path);
+        std::vector<std::string> parseShader(const char *path);
 
         unsigned int createShader(unsigned int SHADER_TYPE, const char *src);
 
