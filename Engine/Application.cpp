@@ -39,9 +39,13 @@ namespace Engine {
     }
 
     void Application::onTick() {
-
+        processInput(m_Window->getWindow());
 
         m_Window->tick();
+
+        float currentFrame = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
     }
 
     void Application::onRender() {
@@ -53,29 +57,43 @@ namespace Engine {
         shader->bind();
         shader->setVec3("color", 1.0f, 1.0f, 0.0f);
 
-        shader->setMat4("mvp", m_Camera->viewProjection(m_Window->getSize()) * model);
+        shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
         Renderer::Renderer::DrawSquare(*shader);
+    }
+
+    void Application::processInput(GLFWwindow *window) {
+        if(glfwGetKey(window, GLFW_KEY_W)){
+            m_Camera->move(Forward, deltaTime);
+        }
+        if(glfwGetKey(window, GLFW_KEY_S)){
+            m_Camera->move(Backward, deltaTime);
+        }
+        if(glfwGetKey(window, GLFW_KEY_A)){
+            m_Camera->move(Left , deltaTime);
+        }
+        if(glfwGetKey(window, GLFW_KEY_D)){
+            m_Camera->move(Right, deltaTime);
+        }
+
+        if(glfwGetKey(window, GLFW_KEY_UP)){
+            m_Camera->increaseMoveSpeed(0.1f);
+        }
+        if(glfwGetKey(window, GLFW_KEY_DOWN)){
+            m_Camera->increaseMoveSpeed(-0.1f);
+        }
+
+        //Mouse Input
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) {
+            double mouseX, mouseY;
+            glfwGetCursorPos(window, &mouseX, &mouseY);
+            m_Camera->rotate((float) mouseX, (float) mouseY);
+        }
     }
 
     void Application::onKeyPressed(GLFWwindow *window, int key, int scancode, int action, int mods) {
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true);
-        }
-
-        Application *app = (Application*) glfwGetWindowUserPointer(window);
-
-        if(key == GLFW_KEY_W){
-            app->GetCamera()->move(Forward, 1.0f);
-        }
-        if(key == GLFW_KEY_S){
-            app->GetCamera()->move(Backward, 1.0f);
-        }
-        if(key == GLFW_KEY_A){
-            app->GetCamera()->move(Left, 1.0f);
-        }
-        if(key == GLFW_KEY_D){
-            app->GetCamera()->move(Right, 1.0f);
         }
     }
 }

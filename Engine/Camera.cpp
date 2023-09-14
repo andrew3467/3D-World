@@ -32,3 +32,44 @@ void Camera::move(Direction dir, float dt) {
             break;
     }
 }
+
+void Camera::rotate(float mouseX, float mouseY, bool cursorEnabled) {
+    if (firstMouse)
+    {
+        lastX = mouseX;
+        lastY = mouseY;
+        firstMouse = false;
+    }
+
+    float xoffset = mouseX - lastX;
+    float yoffset = lastY - mouseY;
+
+    lastX = mouseX;
+    lastY = mouseY;
+
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw   += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f)
+        pitch = 89.0f;
+    if(pitch < -89.0f)
+        pitch = -89.0f;
+
+    glm::vec3 direction;
+    direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    direction.y = sin(glm::radians(pitch));
+    direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    camFront = glm::normalize(direction);
+}
+
+void Camera::increaseMoveSpeed(float change) {
+    moveSpeed += change;
+
+    //Clamp movement to positive real numbers
+    if(moveSpeed < 0){
+        moveSpeed = 0;
+    }
+}

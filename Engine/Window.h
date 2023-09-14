@@ -46,9 +46,11 @@ public:
     bool shouldClose();
 
     glm::vec2 getSize() {return {m_Width, m_Height};}
+    GLFWwindow* getWindow() {return m_Window;}
 
     void setUserPointer(void* ptr);
     void setKeyCallback(GLFWkeyfun callback);
+    void setCursorCallback(GLFWcursorposfun callback);
 };
 
 

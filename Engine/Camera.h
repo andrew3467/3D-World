@@ -28,6 +28,10 @@ public:
 
 public:
     void move(Direction dir, float dt);
+    void rotate(float mouseX, float mouseY, bool cursorEnabled = true);
+
+    void increaseMoveSpeed(float change);
+
 
     inline float GetYaw() const { return yaw;}
     inline float GetPitch() const { return pitch;}
@@ -54,7 +58,12 @@ private:
     glm::vec3 camUp = glm::cross(camDir, camRight);
 
     float moveSpeed;
-    float yaw, pitch;
+
+    const float sensitivity = 0.1f;
+    bool firstMouse = true;
+    float lastX, lastY;
+    float yaw = -90.0f;
+    float pitch = 0.0f;
 };
 
 

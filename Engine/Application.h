@@ -21,9 +21,12 @@ namespace Engine {
         void onRender();
         void onClose();
 
-
+        void processInput(GLFWwindow* window);
 
     private:
+        float deltaTime = 0.0f;
+        float lastFrame = 0.0f;
+
         std::unique_ptr<Renderer::Shader> shader;
 
         std::unique_ptr<Camera> m_Camera;
@@ -35,7 +38,6 @@ namespace Engine {
     private:
 
         static void onKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
-
     };
 }
 

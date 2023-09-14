@@ -56,3 +56,7 @@ void Window::setUserPointer(void* ptr) {
 void Window::setKeyCallback(GLFWkeyfun callback) {
     glfwSetKeyCallback(m_Window, callback);
 }
+
+void Window::setCursorCallback(GLFWcursorposfun callback) {
+    glfwSetCursorPosCallback(m_Window, callback);
+}
