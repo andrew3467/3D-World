@@ -10,16 +10,11 @@ Mesh::Mesh() {
 
 }
 
-Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices)
-    : m_Vertices(vertices), m_Indices(indices), VAO(-1), VBO(-1), EBO(-1)
-{
-    setUpBuffers();
-}
-
 Mesh::Mesh(const MeshData &data)
     : m_Vertices(data.vertices), m_Indices(data.indices), VAO(-1), VBO(-1), EBO(-1)
 {
     setUpBuffers();
+    Meshes.push_back(this);
 }
 
 void Mesh::setUpBuffers() {

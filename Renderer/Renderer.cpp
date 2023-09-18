@@ -3,7 +3,6 @@
 //
 
 #include "Renderer.h"
-#include "VertexBuffer.h"
 
 #include <glad/glad.h>
 
@@ -28,15 +27,15 @@ namespace Renderer {
                 2, 3, 0
         };
 
-        static unsigned int VAO = -1, EBO = -1;
-        static std::unique_ptr<VertexBuffer> VBO;
+        static unsigned int VAO = -1, VBO = -1, EBO = -1;
 
         if (VAO == -1) {
             glGenVertexArrays(1, &VAO);
             glBindVertexArray(VAO);
 
-            VBO = std::make_unique<VertexBuffer>((void*)(&vertices));
-            VBO->bind();
+            glGenBuffers(1, &VBO);
+            glBindBuffer(GL_ARRAY_BUFFER, VBO);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
 
             glGenBuffers(1, &EBO);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);

@@ -11,8 +11,6 @@ add_library(Renderer
         Renderer.h
         Shader.cpp
         Shader.h
-        VertexBuffer.cpp
-        VertexBuffer.h
 )
 
 target_link_libraries(Renderer

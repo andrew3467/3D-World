@@ -7,6 +7,10 @@
 #include "../Renderer/Renderer.h"
 #include "MeshGenerator.h"
 
+#include <imgui.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
+
 namespace WorldGenerator {
 
 
@@ -16,6 +20,7 @@ namespace WorldGenerator {
         while (!m_Window->shouldClose()) {
             onTick();
             onRender();
+            onImGUIRender();
         }
 
         onClose();
@@ -28,6 +33,19 @@ namespace WorldGenerator {
         m_Window->setKeyCallback(onKeyPressed);
 
 
+        //Setup IMGUI
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+        ImGuiIO &io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+
+        ImGui::StyleColorsDark();
+
+        const char* glsl_version = "#version 460";
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->getWindow(), true);
+        ImGui_ImplOpenGL3_Init(glsl_version);
+
         shader = std::make_unique<Renderer::Shader>("../Engine/Shaders/solid_unlit.glsl");
 
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 1.0f);
@@ -36,6 +54,10 @@ namespace WorldGenerator {
     }
 
     void Application::onClose() {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplGlfw_Shutdown();
+        ImGui::DestroyContext();
+
         glfwTerminate();
     }
 
@@ -60,12 +82,23 @@ namespace WorldGenerator {
 
         shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
-        //m_Mesh->draw(*shader);
         Renderer::Renderer::DrawSquare(*shader);
     }
 
     void Application::onImGUIRender() {
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
+
+        ImGui::Begin("Config Window");
+        
+
+
+
+        ImGui::End();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void Application::processInput(GLFWwindow *window) {

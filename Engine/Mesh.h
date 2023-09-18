@@ -18,7 +18,6 @@ struct MeshData{
 
 class Mesh {
 public:
-    Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices);
     Mesh(const MeshData &data);
     Mesh();
     ~Mesh();
@@ -32,6 +31,8 @@ public:
     void draw(Renderer::Shader& shader);
 
 private:
+    std::vector<Mesh*> Meshes;
+
     std::vector<glm::vec3> m_Vertices;
     std::vector<unsigned int> m_Indices;
 
