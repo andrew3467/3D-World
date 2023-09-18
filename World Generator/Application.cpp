@@ -60,8 +60,8 @@ namespace WorldGenerator {
 
         shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
-        m_Mesh->draw(*shader);
-        //Renderer::Renderer::DrawSquare(*shader);
+        //m_Mesh->draw(*shader);
+        Renderer::Renderer::DrawSquare(*shader);
     }
 
     void Application::onImGUIRender() {
