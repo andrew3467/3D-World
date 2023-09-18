@@ -1,8 +1,8 @@
 #include <iostream>
-#include "Engine/Application.h"
+#include "World Generator/Application.h"
 
 int main() {
-    Engine::Application app;
+    WorldGenerator::Application app;
 
     try{
         app.Run();

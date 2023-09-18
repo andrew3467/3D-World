@@ -7,6 +7,14 @@
 #include <glad/glad.h>
 
 namespace Renderer {
+    void Renderer::Draw(unsigned int VAO, int numIndices, const Shader &shader) {
+        glBindVertexArray(VAO);
+        shader.bind();
+        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+        shader.unbind();
+        glBindVertexArray(0);
+    }
+
     void Renderer::DrawSquare(const Shader& shader) {
         static const float vertices[] = {
                 -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,
@@ -41,9 +49,10 @@ namespace Renderer {
             glVertexAttribPointer(1, 3, GL_FLOAT, false, 5 * sizeof(float), (void *) (sizeof(float) * 3));
         }
 
-        glBindVertexArray(VAO);
-        shader.bind();
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
-        shader.unbind();
+        Draw(VAO, 6, shader);
+    }
+
+    void Renderer::DrawCube(const Shader &shader) {
+
     }
 }

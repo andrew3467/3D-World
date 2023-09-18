@@ -11,10 +11,10 @@ find_package(glm CONFIG REQUIRED)
 add_library(Engine
         Window.cpp
         Window.h
-        Application.cpp
-        Application.h
         Camera.cpp
         Camera.h
+        Mesh.cpp
+        Mesh.h
 )
 
 

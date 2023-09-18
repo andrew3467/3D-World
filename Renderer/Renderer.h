@@ -12,6 +12,8 @@ namespace Renderer {
     class Renderer {
     public:
         static void DrawSquare(const Shader& shader);
+        static void DrawCube(const Shader& shader);
+        static void Draw(unsigned int VAO, int numIndices, const Shader& shader);
     };
 }
 

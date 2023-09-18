@@ -5,10 +5,9 @@
 #include <iostream>
 #include "Application.h"
 #include "../Renderer/Renderer.h"
+#include "MeshGenerator.h"
 
-
-
-namespace Engine {
+namespace WorldGenerator {
 
 
     void Application::Run() {
@@ -32,6 +31,8 @@ namespace Engine {
         shader = std::make_unique<Renderer::Shader>("../Engine/Shaders/solid_unlit.glsl");
 
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 1.0f);
+
+        m_Mesh = std::make_unique<Mesh>(MeshGenerator::rectangleMesh(4, 4));
     }
 
     void Application::onClose() {
@@ -59,7 +60,12 @@ namespace Engine {
 
         shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
-        Renderer::Renderer::DrawSquare(*shader);
+        m_Mesh->draw(*shader);
+        //Renderer::Renderer::DrawSquare(*shader);
+    }
+
+    void Application::onImGUIRender() {
+
     }
 
     void Application::processInput(GLFWwindow *window) {
@@ -85,7 +91,7 @@ namespace Engine {
 
         //Mouse Input
         if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE)) {
-            double mouseX, mouseY;
+            static double mouseX, mouseY;
             glfwGetCursorPos(window, &mouseX, &mouseY);
             m_Camera->rotate((float) mouseX, (float) mouseY);
         }

@@ -1,16 +1,18 @@
 //
-// Created by apgra on 9/12/2023.
+// Created by apgra on 9/18/2023.
 //
 
 #ifndef APPLICATION_APPLICATION_H
 #define APPLICATION_APPLICATION_H
 
 
-#include "Window.h"
-#include "../Renderer/Shader.h"
-#include "Camera.h"
 
-namespace Engine {
+#include "../Renderer/Shader.h"
+#include "../Engine/Camera.h"
+#include "../Engine/Window.h"
+#include "../Engine/Mesh.h"
+
+namespace WorldGenerator {
     class Application {
     public:
         void Run();
@@ -19,6 +21,7 @@ namespace Engine {
         void onStart();
         void onTick();
         void onRender();
+        void onImGUIRender();
         void onClose();
 
         void processInput(GLFWwindow* window);
@@ -31,6 +34,8 @@ namespace Engine {
 
         std::unique_ptr<Camera> m_Camera;
         std::unique_ptr<Window> m_Window;
+
+        std::unique_ptr<Mesh> m_Mesh;
 
     public:
         Camera* GetCamera() {return m_Camera.get();}
