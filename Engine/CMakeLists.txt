@@ -15,6 +15,8 @@ add_library(Engine
         Camera.h
         Mesh.cpp
         Mesh.h
+        Helper/Singleton.h
+        Helper/PerlinNoise.h
 )
 
 

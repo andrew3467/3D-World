@@ -10,7 +10,7 @@
 #include "../Renderer/Shader.h"
 #include "../Engine/Camera.h"
 #include "../Engine/Window.h"
-#include "../Engine/Mesh.h"
+#include "TerrainChunk.h"
 
 namespace WorldGenerator {
     class Application {
@@ -27,6 +27,8 @@ namespace WorldGenerator {
         void processInput(GLFWwindow* window);
 
     private:
+        glm::ivec2 meshSize = {4,4};
+
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
 
@@ -35,7 +37,8 @@ namespace WorldGenerator {
         std::unique_ptr<Camera> m_Camera;
         std::unique_ptr<Window> m_Window;
 
-        std::unique_ptr<Mesh> m_Mesh;
+        TerrainConfig m_TerrainConfig;
+        std::unique_ptr<TerrainChunk> m_TerrainChunk;
 
     public:
         Camera* GetCamera() {return m_Camera.get();}

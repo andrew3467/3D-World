@@ -11,14 +11,10 @@
 
 #include "../Renderer/Shader.h"
 
-struct MeshData{
-    std::vector<glm::vec3> vertices;
-    std::vector<unsigned int> indices;
-};
 
 class Mesh {
 public:
-    Mesh(const MeshData &data);
+    Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices);
     Mesh();
     ~Mesh();
 
@@ -28,15 +24,19 @@ private:
     void setUpBuffers();
 
 public:
+    static void DrawMeshes(Renderer::Shader& shader);
+
     void draw(Renderer::Shader& shader);
+    void updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned int> &indices);
 
 private:
-    std::vector<Mesh*> Meshes;
-
     std::vector<glm::vec3> m_Vertices;
     std::vector<unsigned int> m_Indices;
 
     unsigned int VAO, VBO, EBO;
+
+public:
+    static std::vector<Mesh*> Meshes;
 };
 
 

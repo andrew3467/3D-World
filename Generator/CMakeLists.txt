@@ -15,6 +15,8 @@ set(IMGUI_SRC
         ${CMAKE_SOURCE_DIR}/external/ImGui/imgui_impl_opengl3.cpp
         ${CMAKE_SOURCE_DIR}/external/ImGui/imgui_impl_opengl3.h
         ${CMAKE_SOURCE_DIR}/external/ImGui/imgui_impl_opengl3_loader.h
+        TerrainChunk.cpp
+        TerrainChunk.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/external/ImGui)
@@ -23,8 +25,6 @@ add_library(World_Generator
         ${IMGUI_SRC}
         Application.cpp
         Application.h
-        MeshGenerator.cpp
-        MeshGenerator.h
 )
 
 

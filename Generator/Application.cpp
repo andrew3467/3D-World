@@ -5,7 +5,6 @@
 #include <iostream>
 #include "Application.h"
 #include "../Renderer/Renderer.h"
-#include "MeshGenerator.h"
 
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
@@ -13,6 +12,8 @@
 
 namespace WorldGenerator {
 
+    bool imGUIActive = false;
+    bool wireFrameMode = false;
 
     void Application::Run() {
         onStart();
@@ -50,7 +51,7 @@ namespace WorldGenerator {
 
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 1.0f);
 
-        m_Mesh = std::make_unique<Mesh>(MeshGenerator::rectangleMesh(4, 4));
+        m_TerrainChunk = std::make_unique<TerrainChunk>(&m_TerrainConfig);
     }
 
     void Application::onClose() {
@@ -82,18 +83,32 @@ namespace WorldGenerator {
 
         shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
-        Renderer::Renderer::DrawSquare(*shader);
+        Mesh::DrawMeshes(*shader);
     }
 
     void Application::onImGUIRender() {
+        if(!imGUIActive){
+            return;
+        }
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-
         ImGui::Begin("Config Window");
-        
 
+
+        bool updateMesh = false;
+        ImGui::Text("Terrain Config");
+        updateMesh |= ImGui::SliderInt2("Terrain Size", &m_TerrainConfig.size.x, 2, 16);
+        updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
+        updateMesh |= ImGui::SliderFloat("Height", &m_TerrainConfig.height, 0.1f, 8.0f);
+        updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+
+
+        if(updateMesh){
+            m_TerrainChunk->updateMesh();
+        }
 
 
         ImGui::End();
@@ -131,8 +146,25 @@ namespace WorldGenerator {
     }
 
     void Application::onKeyPressed(GLFWwindow *window, int key, int scancode, int action, int mods) {
+        Application* app = (Application*) glfwGetWindowUserPointer(window);
+
         if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, true);
+        }
+
+        if(key == GLFW_KEY_SPACE && action == GLFW_PRESS){
+            imGUIActive = !imGUIActive;
+        }
+
+        if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS){
+            wireFrameMode = !wireFrameMode;
+
+            if(wireFrameMode){
+                glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+            }else{
+                glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+            }
+
         }
     }
 }

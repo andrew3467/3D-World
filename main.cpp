@@ -1,5 +1,5 @@
 #include <iostream>
-#include "World Generator/Application.h"
+#include "Generator/Application.h"
 
 int main() {
     WorldGenerator::Application app;

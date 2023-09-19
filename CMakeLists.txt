@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 add_subdirectory(Engine)
 add_subdirectory(Renderer)
-add_subdirectory("World Generator")
+add_subdirectory("Generator")
 
 add_executable(Application
         main.cpp
