@@ -40,6 +40,8 @@ namespace WorldGenerator {
         TerrainConfig m_TerrainConfig;
         std::unique_ptr<TerrainChunk> m_TerrainChunk;
 
+        glm::vec3 m_ChunkColor;
+
     public:
         Camera* GetCamera() {return m_Camera.get();}
 

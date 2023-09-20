@@ -79,7 +79,7 @@ namespace WorldGenerator {
         glm::mat4 model = glm::mat4(1.0f);
 
         shader->bind();
-        shader->setVec3("color", 1.0f, 1.0f, 0.0f);
+        shader->setVec3("color", m_ChunkColor);
 
         shader->setMat4("mvp", model * m_Camera->viewProjection(m_Window->getSize()));
 
@@ -101,9 +101,12 @@ namespace WorldGenerator {
         bool updateMesh = false;
         ImGui::Text("Terrain Config");
         updateMesh |= ImGui::SliderInt2("Terrain Size", &m_TerrainConfig.size.x, 2, 16);
+        updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 4);
         updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
         updateMesh |= ImGui::SliderFloat("Height", &m_TerrainConfig.height, 0.1f, 8.0f);
         updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+
+        ImGui::ColorPicker3("Color", &m_ChunkColor.x);
 
 
         if(updateMesh){
