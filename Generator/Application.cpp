@@ -32,6 +32,7 @@ namespace WorldGenerator {
         m_Window->setUserPointer(this);
 
         m_Window->setKeyCallback(onKeyPressed);
+        m_Window->setScrollCallback(onScroll);
 
 
         //Setup IMGUI
@@ -49,7 +50,7 @@ namespace WorldGenerator {
 
         shader = std::make_unique<Renderer::Shader>("../Engine/Shaders/solid_unlit.glsl");
 
-        m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 1.0f);
+        m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 4.0f);
 
         m_TerrainChunk = std::make_unique<TerrainChunk>(&m_TerrainConfig);
     }
@@ -98,15 +99,27 @@ namespace WorldGenerator {
         ImGui::Begin("Config Window");
 
 
-        bool updateMesh = false;
-        ImGui::Text("Terrain Config");
-        updateMesh |= ImGui::SliderInt2("Terrain Size", &m_TerrainConfig.size.x, 2, 16);
-        updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 4);
-        updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
-        updateMesh |= ImGui::SliderFloat("Height", &m_TerrainConfig.height, 0.1f, 8.0f);
-        updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+        float frameDiff = 0;
+        if(lastFrame > 1){
+            frameDiff = glfwGetTime() - lastFrame;
+        }
+        std::string secPerFrame = std::string("Seconds per frame").append(std::to_string(1000 / frameDiff));
+        ImGui::Text(secPerFrame.c_str());
 
-        ImGui::ColorPicker3("Color", &m_ChunkColor.x);
+        bool updateMesh = false;
+        if(ImGui::CollapsingHeader("Terrain Config")) {
+            ImGui::Indent();
+
+            updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 16);
+            updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 5);
+            updateMesh |= ImGui::SliderFloat("Noise Scale", &m_TerrainConfig.noiseScale, 0, 10);
+            updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
+            updateMesh |= ImGui::SliderFloat("Height", &m_TerrainConfig.height, 0.1f, 8.0f);
+            updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+
+            ImGui::ColorPicker3("Color", &m_ChunkColor.x);
+        }
+
 
 
         if(updateMesh){
@@ -131,13 +144,6 @@ namespace WorldGenerator {
         }
         if(glfwGetKey(window, GLFW_KEY_D)){
             m_Camera->move(Right, deltaTime);
-        }
-
-        if(glfwGetKey(window, GLFW_KEY_UP)){
-            m_Camera->increaseMoveSpeed(0.1f);
-        }
-        if(glfwGetKey(window, GLFW_KEY_DOWN)){
-            m_Camera->increaseMoveSpeed(-0.1f);
         }
 
         //Mouse Input
@@ -168,6 +174,19 @@ namespace WorldGenerator {
                 glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
             }
 
+        }
+    }
+
+    void Application::onScroll(GLFWwindow* window, double xoffset, double yoffset) {
+        Application* app = (Application*) glfwGetWindowUserPointer(window);
+
+
+        if(yoffset > 0){
+            app->GetCamera()->increaseMoveSpeed(1.0f);
+        }
+
+        if(yoffset < 0){
+            app->GetCamera()->increaseMoveSpeed(-1.0f);
         }
     }
 }

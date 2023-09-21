@@ -50,7 +50,7 @@ public:
 
     void setUserPointer(void* ptr);
     void setKeyCallback(GLFWkeyfun callback);
-    void setCursorCallback(GLFWcursorposfun callback);
+    void setScrollCallback(GLFWscrollfun callback);
 };
 
 

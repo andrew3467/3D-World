@@ -26,9 +26,11 @@ namespace WorldGenerator {
 
         void processInput(GLFWwindow* window);
 
-    private:
-        glm::ivec2 meshSize = {4,4};
+    public:
+        Camera* GetCamera() {return m_Camera.get();}
 
+
+    private:
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
 
@@ -40,14 +42,12 @@ namespace WorldGenerator {
         TerrainConfig m_TerrainConfig;
         std::unique_ptr<TerrainChunk> m_TerrainChunk;
 
-        glm::vec3 m_ChunkColor;
-
-    public:
-        Camera* GetCamera() {return m_Camera.get();}
+        glm::vec3 m_ChunkColor = {0.3294f, 0.7333f, 0.1921f};
 
     private:
 
         static void onKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void onScroll(GLFWwindow *window, double xoffset, double yoffset);
     };
 }
 

@@ -16,7 +16,7 @@ Mesh::Mesh() : VAO(0), VBO(0), EBO(0) {
 }
 
 Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices)
-    : m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), VAO(0), VBO(0), EBO(0)
+        : m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), VAO(0), VBO(0), EBO(0)
 {
     setUpBuffers();
     Meshes.push_back(this);
@@ -50,7 +50,7 @@ void Mesh::updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned
 }
 
 void Mesh::DrawMeshes(Renderer::Shader &shader) {
-     for(auto& mesh : Meshes){
+    for(auto& mesh : Meshes){
         mesh->draw(shader);
     }
 }
@@ -58,5 +58,3 @@ void Mesh::DrawMeshes(Renderer::Shader &shader) {
 void Mesh::draw(Renderer::Shader &shader) {
     Renderer::Renderer::Draw(VAO, m_Indices.size(), shader);
 }
-
-

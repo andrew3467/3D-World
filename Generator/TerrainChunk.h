@@ -10,9 +10,10 @@
 #include "../Engine/Mesh.h"
 
 struct TerrainConfig{
-    glm::ivec2 size = {4, 4};
+    int size = 4;
     int resolution = 0;
     glm::vec2 noiseOffset = {0, 0};
+    float noiseScale = 1.0f;
     float height = 1;
     int octaves = 1;
 };

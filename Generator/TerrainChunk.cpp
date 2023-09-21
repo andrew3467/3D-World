@@ -22,30 +22,35 @@ void TerrainChunk::createMesh() {
     int resolution = std::pow(2, m_Config->resolution);
 
     //Vertices per line: size + (res - 1) * (size - 1)
-    glm::ivec2 size = m_Config->size + (glm::ivec2(resolution - 1) * (m_Config->size - glm::ivec2(1)));
+    int size = m_Config->size + ((resolution - 1) * (m_Config->size - 1));
+    int halfSize = size / 2;
 
     const siv::PerlinNoise::seed_type seed = 123456u;
     const siv::PerlinNoise perlin{ seed };
 
     int vertIndex = 0;
-    for(int z = 0; z < size.y; z++){
-        for(int x = 0; x < size.x; x++){
+    for(int z = -halfSize; z < halfSize; z++){
+        for(int x = -halfSize; x < halfSize; x++){
             float xPos = x / (float)(resolution);
             float zPos = z / (float)(resolution);
 
 
-            const float height = perlin.octave2D(xPos + m_Config->noiseOffset.x,
-                                                 zPos + m_Config->noiseOffset.y,
+            float height = perlin.octave2D((xPos + m_Config->noiseOffset.x) / m_Config->noiseScale,
+                                                 (zPos + m_Config->noiseOffset.y) / m_Config->noiseScale,
                                                  m_Config->octaves);
-            vertices.emplace_back(xPos, height, zPos);
+            //Normalize height between 0 and 1
+            height = (1 + height) / 2.0f;
 
-            if(x < size.x - 1 && z < size.y - 1){
+
+            vertices.emplace_back(xPos, height * m_Config->height, zPos);
+
+            if(x < size - 1 && z < size - 1) {
                 indices.push_back(vertIndex);
-                indices.push_back(vertIndex + size.x);
+                indices.push_back(vertIndex + size);
                 indices.push_back(vertIndex + 1);
 
-                indices.push_back(vertIndex + size.x);
-                indices.push_back(vertIndex + size.x + 1);
+                indices.push_back(vertIndex + size);
+                indices.push_back(vertIndex + size + 1);
                 indices.push_back(vertIndex + 1);
             }
 
