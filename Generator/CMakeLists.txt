@@ -17,6 +17,7 @@ set(IMGUI_SRC
         ${CMAKE_SOURCE_DIR}/external/ImGui/imgui_impl_opengl3_loader.h
         TerrainChunk.cpp
         TerrainChunk.h
+        MarchingTables.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/external/ImGui)

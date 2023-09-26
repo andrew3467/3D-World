@@ -98,24 +98,41 @@ namespace WorldGenerator {
 
         ImGui::Begin("Config Window");
 
-
-        float frameDiff = 0;
-        if(lastFrame > 1){
-            frameDiff = glfwGetTime() - lastFrame;
-        }
-        std::string secPerFrame = std::string("Seconds per frame").append(std::to_string(1000 / frameDiff));
-        ImGui::Text(secPerFrame.c_str());
-
         bool updateMesh = false;
         if(ImGui::CollapsingHeader("Terrain Config")) {
             ImGui::Indent();
 
+            int genType = m_TerrainConfig.genType;
+            const char* genTypeNames[2] = {"Height Map", "Marching Cubes"};
+            const char* genTypeName = (genType >= 0 && genType < 2) ? genTypeNames[genType] : "Unknown";
+
+            updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 1, genTypeName);
+            updateMesh |= ImGui::SliderInt("Seed", &m_TerrainConfig.seed, 0, 32767);
             updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 16);
             updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 5);
-            updateMesh |= ImGui::SliderFloat("Noise Scale", &m_TerrainConfig.noiseScale, 0, 10);
-            updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
-            updateMesh |= ImGui::SliderFloat("Height", &m_TerrainConfig.height, 0.1f, 8.0f);
-            updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+
+            if(ImGui::CollapsingHeader("Noise Config")){
+                ImGui::Indent();
+                updateMesh |= ImGui::SliderFloat("Noise Scale", &m_TerrainConfig.noiseScale, 0, 10);
+                updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
+                updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+            }
+
+
+            if(m_TerrainConfig.genType == HeightMap && ImGui::CollapsingHeader("Height Map Config")) {
+                ImGui::Indent();
+
+                updateMesh |= ImGui::SliderFloat("Height Multiplier", &m_TerrainConfig.heightMultiplier, 0.1f, 8.0f);
+            }
+
+            if(m_TerrainConfig.genType == MarchingCube && ImGui::CollapsingHeader("Marching Cubes Config")) {
+                ImGui::Indent();
+
+                updateMesh |= ImGui::SliderInt("Height", &m_TerrainConfig.height, 1, 16);
+                updateMesh |= ImGui::SliderFloat("Iso Surface", &m_TerrainConfig.isoLevel, 0.0f, 1.0f);
+            }
+
+            ImGui::Unindent();
 
             ImGui::ColorPicker3("Color", &m_ChunkColor.x);
         }
