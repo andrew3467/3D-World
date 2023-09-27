@@ -13,7 +13,7 @@ namespace Renderer {
     public:
         static void DrawSquare(const Shader& shader);
         static void DrawCube(const Shader& shader);
-        static void Draw(unsigned int VAO, int numIndices, const Shader& shader);
+        static void Draw(unsigned int VAO, int count, const Shader& shader, bool drawIndexed = true);
     };
 }
 

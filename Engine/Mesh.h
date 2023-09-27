@@ -15,6 +15,7 @@
 class Mesh {
 public:
     Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices);
+    Mesh(std::vector<glm::vec3> vertices);
     Mesh();
     ~Mesh();
 
@@ -28,8 +29,11 @@ public:
 
     void draw(Renderer::Shader& shader);
     void updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned int> &indices);
+    void updateMeshData(std::vector<glm::vec3> &vertices);
 
 private:
+    bool indexedBuffer = true;
+
     std::vector<glm::vec3> m_Vertices;
     std::vector<unsigned int> m_Indices;
 

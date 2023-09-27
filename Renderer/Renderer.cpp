@@ -7,10 +7,16 @@
 #include <glad/glad.h>
 
 namespace Renderer {
-    void Renderer::Draw(unsigned int VAO, int numIndices, const Shader &shader) {
+    void Renderer::Draw(unsigned int VAO, int count, const Shader& shader, bool drawIndexed) {
         glBindVertexArray(VAO);
         shader.bind();
-        glDrawElements(GL_TRIANGLES, numIndices, GL_UNSIGNED_INT, nullptr);
+
+        if(drawIndexed){
+            glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
+        }else{
+            glDrawArrays(GL_TRIANGLES, 0, count);
+        }
+
         shader.unbind();
         glBindVertexArray(0);
     }

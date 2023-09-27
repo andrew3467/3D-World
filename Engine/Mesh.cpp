@@ -22,6 +22,11 @@ Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices)
     Meshes.push_back(this);
 }
 
+Mesh::Mesh(std::vector<glm::vec3> vertices) : m_Vertices(std::move(vertices)), VAO(0), VBO(0), EBO(0){
+    setUpBuffers();
+    Meshes.push_back(this);
+}
+
 void Mesh::setUpBuffers() {
     if(VAO == 0) glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -30,9 +35,11 @@ void Mesh::setUpBuffers() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(glm::vec3), &m_Vertices[0], GL_STATIC_DRAW);
 
-    if(EBO == 0) glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+    if(indexedBuffer){
+        if (EBO == 0) glGenBuffers(1, &EBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Indices.size() * sizeof(unsigned int), &m_Indices[0], GL_STATIC_DRAW);
+    }
 
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
@@ -46,6 +53,14 @@ void Mesh::updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned
     m_Vertices = vertices;
     m_Indices =  indices;
 
+    indexedBuffer = true;
+    setUpBuffers();
+}
+
+void Mesh::updateMeshData(std::vector<glm::vec3> &vertices) {
+    m_Vertices = vertices;
+
+    indexedBuffer = false;
     setUpBuffers();
 }
 
@@ -56,5 +71,10 @@ void Mesh::DrawMeshes(Renderer::Shader &shader) {
 }
 
 void Mesh::draw(Renderer::Shader &shader) {
-    Renderer::Renderer::Draw(VAO, m_Indices.size(), shader);
+    if(indexedBuffer){
+        Renderer::Renderer::Draw(VAO, m_Indices.size(), shader, true);
+    }
+    else{
+        Renderer::Renderer::Draw(VAO, m_Vertices.size(), shader, false);
+    }
 }

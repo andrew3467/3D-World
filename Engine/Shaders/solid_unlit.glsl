@@ -25,6 +25,10 @@ out vec4 FragColor;
 
 uniform vec3 color;
 
+
 void main() {
-    FragColor = vec4(vec3(pos.y) * color, 1.0);
+    vec3 result = vec3(pos.y) * color;
+
+
+    FragColor = vec4(result, 1.0);
 }

@@ -20,13 +20,13 @@ struct TerrainConfig {
     int seed = 32450;
     int size = 4;
     int resolution = 0;
-    glm::vec2 noiseOffset = {0, 0};
-    float noiseScale = 1.0f;
+    glm::vec3 noiseOffset = {0, 0, 0};
+    float noiseScale = 1.4f;
     float heightMultiplier = 1;
     int octaves = 1;
 
     //Marching Cubes
-    int height = 1;
+    int height = 2;
     float isoLevel = 0.5f;
 };
 
@@ -38,8 +38,13 @@ public:
 
 
 private:
+    glm::vec3 interp(glm::vec3 edgeVertex1, float valueAtVertex1, glm::vec3 edgeVertex2, float valueAtVertex2);
+
     void createHeightMapMesh();
     void createMarchingCubesMesh();
+
+    int indexFrom3D(int x, int y, int z);
+    int indexFrom3D(glm::ivec3 v);
 
 public:
     void updateMesh();

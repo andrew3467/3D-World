@@ -114,7 +114,7 @@ namespace WorldGenerator {
             if(ImGui::CollapsingHeader("Noise Config")){
                 ImGui::Indent();
                 updateMesh |= ImGui::SliderFloat("Noise Scale", &m_TerrainConfig.noiseScale, 0, 10);
-                updateMesh |= ImGui::SliderFloat2("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
+                updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
                 updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
             }
 
