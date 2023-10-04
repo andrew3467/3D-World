@@ -50,7 +50,7 @@ private:
     int indexFrom3D(int x, int y, int z);
     int indexFrom3D(glm::ivec3 v);
     int indexFrom2D(int x, int y);
-    int indexFrom2D(glm::ivec2 v);
+    int indexFrom2D(glm::ivec3 v);
 
 public:
     void updateMesh();

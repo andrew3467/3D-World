@@ -103,7 +103,7 @@ namespace WorldGenerator {
             ImGui::Indent();
 
             int genType = m_TerrainConfig.genType;
-            const char* genTypeNames[3] = {"Height Map", "Marching Cubes 2D", "Marching Cubes 3D"};
+            const char* genTypeNames[3] = {"Height Map", "Marching Cubes 3D", "Marching Cubes 2D"};
             const char* genTypeName = (genType >= 0 && genType < 3) ? genTypeNames[genType] : "Unknown";
 
             updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 2, genTypeName);
@@ -127,7 +127,7 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat("Height Multiplier", &m_TerrainConfig.heightMultiplier, 0.1f, 8.0f);
             }
 
-            if(m_TerrainConfig.genType == MarchingCube3D && ImGui::CollapsingHeader("Marching Cubes Config")) {
+            if(m_TerrainConfig.genType == MarchingCube3D || m_TerrainConfig.genType == MarchingCube2D && ImGui::CollapsingHeader("Marching Cubes Config")) {
                 ImGui::Indent();
 
                 updateMesh |= ImGui::SliderInt("Height", &m_TerrainConfig.height, 1, 16);

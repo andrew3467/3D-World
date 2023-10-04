@@ -42,8 +42,8 @@ int TerrainChunk::indexFrom2D(int x, int y) {
 }
 
 
-int TerrainChunk::indexFrom2D(glm::ivec2 v) {
-    return indexFrom2D(v.x, v.y);
+int TerrainChunk::indexFrom2D(glm::ivec3 v) {
+    return indexFrom2D(v.x, v.z);
 }
 
 void TerrainChunk::createHeightMapMesh() {
@@ -223,8 +223,8 @@ void TerrainChunk::createMarchingCubesMesh2D() {
     noise.SetFrequency(m_Config->frequency);
     noise.SetLacunarity(m_Config->lacunarity);
 
-    for (int x = 0; x < m_Size; x++) {
-        for (int z = 0; z < m_Size; z++) {
+    for (int z = 0; z < m_Size; z++) {
+        for (int x = 0; x < m_Size; x ++) {
             float xPos = z / (float) (resolution);
             float zPos = z / (float) (resolution);
 
@@ -238,8 +238,8 @@ void TerrainChunk::createMarchingCubesMesh2D() {
         }
     }
 
-    for (int x = 0; x < m_Size - 1; x++) {
-        for (int z = 0; z < m_Size - 1; z++) {
+    for (int z = 0; z < m_Size - 1; z++) {
+        for (int x = 0; x < m_Size - 1; x++) {
             float xPos = x / (float) (resolution);
             float zPos = z / (float) (resolution);
 
@@ -274,21 +274,21 @@ void TerrainChunk::createMarchingCubesMesh2D() {
 
                 vertices.push_back(
                         interp(cornerOffsets[e00],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e00])],
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e00])],
                                cornerOffsets[e01],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e01])]) * scaledDim + worldPos);
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e01])]) * scaledDim + worldPos);
 
                 vertices.push_back(
                         interp(cornerOffsets[e10],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e10])],
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e10])],
                                cornerOffsets[e11],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e11])]) * scaledDim + worldPos);
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e11])]) * scaledDim + worldPos);
 
                 vertices.push_back(
                         interp(cornerOffsets[e20],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e20])],
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e20])],
                                cornerOffsets[e21],
-                               noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e21])]) * scaledDim + worldPos);
+                               noiseValues[indexFrom2D(cubeCoords + cornerOffsets[e21])]) * scaledDim + worldPos);
             }
         }
     }
