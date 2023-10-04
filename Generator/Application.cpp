@@ -103,10 +103,10 @@ namespace WorldGenerator {
             ImGui::Indent();
 
             int genType = m_TerrainConfig.genType;
-            const char* genTypeNames[2] = {"Height Map", "Marching Cubes"};
-            const char* genTypeName = (genType >= 0 && genType < 2) ? genTypeNames[genType] : "Unknown";
+            const char* genTypeNames[3] = {"Height Map", "Marching Cubes 2D", "Marching Cubes 3D"};
+            const char* genTypeName = (genType >= 0 && genType < 3) ? genTypeNames[genType] : "Unknown";
 
-            updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 1, genTypeName);
+            updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 2, genTypeName);
             updateMesh |= ImGui::SliderInt("Seed", &m_TerrainConfig.seed, 0, 32767);
             updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 16);
             updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 5);
@@ -116,6 +116,8 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat("Noise Scale", &m_TerrainConfig.noiseScale, 0, 10);
                 updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
                 updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
+                updateMesh |= ImGui::SliderFloat("Frequency", &m_TerrainConfig.frequency, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
             }
 
 
@@ -125,7 +127,7 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat("Height Multiplier", &m_TerrainConfig.heightMultiplier, 0.1f, 8.0f);
             }
 
-            if(m_TerrainConfig.genType == MarchingCube && ImGui::CollapsingHeader("Marching Cubes Config")) {
+            if(m_TerrainConfig.genType == MarchingCube3D && ImGui::CollapsingHeader("Marching Cubes Config")) {
                 ImGui::Indent();
 
                 updateMesh |= ImGui::SliderInt("Height", &m_TerrainConfig.height, 1, 16);

@@ -13,15 +13,15 @@ static int edgeConnections[12][2] = {
         {0,4}, {1,5}, {2,6}, {3,7}
 };
 
-static glm::ivec3 cornerOffsets[8] = {
-        glm::ivec3(0, 0, 1),
-        glm::ivec3(1, 0, 1),
-        glm::ivec3(1, 0, 0),
-        glm::ivec3(0, 0, 0),
-        glm::ivec3(0, 1, 1),
-        glm::ivec3(1, 1, 1),
-        glm::ivec3(1, 1, 0),
-        glm::ivec3(0, 1, 0)
+static glm::vec3 cornerOffsets[8] = {
+        glm::vec3(0, 0, 1),
+        glm::vec3(1, 0, 1),
+        glm::vec3(1, 0, 0),
+        glm::vec3(0, 0, 0),
+        glm::vec3(0, 1, 1),
+        glm::vec3(1, 1, 1),
+        glm::vec3(1, 1, 0),
+        glm::vec3(0, 1, 0)
 };
 
 static int triTable[256][16] = {

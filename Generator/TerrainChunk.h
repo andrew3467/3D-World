@@ -11,7 +11,8 @@
 
 enum GenerationType {
     HeightMap = 0,
-    MarchingCube = 1
+    MarchingCube3D = 1,
+    MarchingCube2D = 2
 };
 
 struct TerrainConfig {
@@ -24,10 +25,12 @@ struct TerrainConfig {
     float noiseScale = 1.4f;
     float heightMultiplier = 1;
     int octaves = 1;
+    float frequency = 1.0f;
+    float lacunarity = 1.0f;
 
     //Marching Cubes
     int height = 2;
-    float isoLevel = 0.5f;
+    float isoLevel = 0.5f;;
 };
 
 
@@ -41,10 +44,13 @@ private:
     glm::vec3 interp(glm::vec3 edgeVertex1, float valueAtVertex1, glm::vec3 edgeVertex2, float valueAtVertex2);
 
     void createHeightMapMesh();
-    void createMarchingCubesMesh();
+    void createMarchingCubesMesh3D();
+    void createMarchingCubesMesh2D();
 
     int indexFrom3D(int x, int y, int z);
     int indexFrom3D(glm::ivec3 v);
+    int indexFrom2D(int x, int y);
+    int indexFrom2D(glm::ivec2 v);
 
 public:
     void updateMesh();
@@ -52,6 +58,9 @@ public:
 private:
     TerrainConfig* m_Config;
     std::unique_ptr<Mesh> m_Mesh;
+
+    int m_Size;
+    int m_Height;
 };
 
 

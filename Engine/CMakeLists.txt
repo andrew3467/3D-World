@@ -16,7 +16,6 @@ add_library(Engine
         Mesh.cpp
         Mesh.h
         Helper/Singleton.h
-        Helper/PerlinNoise.h
 )
 
 
