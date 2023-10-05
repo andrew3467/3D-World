@@ -15,14 +15,14 @@ Mesh::Mesh() : VAO(0), VBO(0), EBO(0) {
     Meshes.push_back(this);
 }
 
-Mesh::Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices)
+Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
         : m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), VAO(0), VBO(0), EBO(0)
 {
     setUpBuffers();
     Meshes.push_back(this);
 }
 
-Mesh::Mesh(std::vector<glm::vec3> vertices) : m_Vertices(std::move(vertices)), VAO(0), VBO(0), EBO(0){
+Mesh::Mesh(std::vector<Vertex> vertices) : m_Vertices(std::move(vertices)), VAO(0), VBO(0), EBO(0){
     setUpBuffers();
     Meshes.push_back(this);
 }
@@ -33,7 +33,7 @@ void Mesh::setUpBuffers() {
 
     if(VBO == 0) glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(glm::vec3), &m_Vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, m_Vertices.size() * sizeof(Vertex), &m_Vertices[0], GL_STATIC_DRAW);
 
     if(indexedBuffer){
         if (EBO == 0) glGenBuffers(1, &EBO);
@@ -42,14 +42,23 @@ void Mesh::setUpBuffers() {
     }
 
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, false, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, false, sizeof(Vertex), (void*)offsetof(Vertex, Position));
+
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, false, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+
+    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(Vertex), (void*)offsetof(Vertex, UV));
+
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(3, 3, GL_FLOAT, false, sizeof(Vertex), (void*)offsetof(Vertex, Color));
 }
 
 Mesh::~Mesh() {
 
 }
 
-void Mesh::updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned int> &indices) {
+void Mesh::updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices) {
     m_Vertices = vertices;
     m_Indices =  indices;
 
@@ -57,7 +66,7 @@ void Mesh::updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned
     setUpBuffers();
 }
 
-void Mesh::updateMeshData(std::vector<glm::vec3> &vertices) {
+void Mesh::updateMeshData(std::vector<Vertex> &vertices) {
     m_Vertices = vertices;
 
     indexedBuffer = false;

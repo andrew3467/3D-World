@@ -11,22 +11,25 @@
 
 enum GenerationType {
     HeightMap = 0,
-    MarchingCube3D = 1,
-    MarchingCube2D = 2
+    MarchingCube3D = 1
 };
 
 struct TerrainConfig {
     GenerationType genType = HeightMap;
 
+    glm::vec3 color = {0.3294f, 0.7333f, 0.1921f};
+
     int seed = 32450;
     int size = 4;
     int resolution = 0;
     glm::vec3 noiseOffset = {0, 0, 0};
-    float noiseScale = 1.4f;
+    glm::vec2 noiseScale = {1.4f, 1.4f};
     float heightMultiplier = 1;
     int octaves = 1;
     float frequency = 1.0f;
+    float amplitude = 1.0f;
     float lacunarity = 1.0f;
+    float persistence = 1.0f;
 
     //Marching Cubes
     int height = 2;
@@ -45,12 +48,9 @@ private:
 
     void createHeightMapMesh();
     void createMarchingCubesMesh3D();
-    void createMarchingCubesMesh2D();
 
     int indexFrom3D(int x, int y, int z);
     int indexFrom3D(glm::ivec3 v);
-    int indexFrom2D(int x, int y);
-    int indexFrom2D(glm::ivec3 v);
 
 public:
     void updateMesh();

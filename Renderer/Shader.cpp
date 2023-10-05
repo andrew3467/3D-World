@@ -71,7 +71,7 @@ namespace Renderer {
             }
         }
 
-        //Assumes fragment is final shader
+        //Assumes fragment is final lit_shader
         shaders[curShader] = src;
 
         return shaders;
@@ -166,5 +166,17 @@ namespace Renderer {
 //Cleanup
     Shader::~Shader() {
         glDeleteProgram(m_Handle);
+    }
+
+    void Shader::setPointLight(std::string& arrIndex, PointLight &light) {
+        setVec3("pointLights[" + arrIndex + "].Position", light.Position);
+
+        setVec3("pointLights[" + arrIndex + "].Ambient", light.Ambient);
+        setVec3("pointLights[" + arrIndex + "].Diffuse", light.Diffuse);
+        setVec3("pointLights[" + arrIndex + "].Specular", light.Specular);
+
+        setFloat("pointLights[" + arrIndex + "].Constant", light.Constant);
+        setFloat("pointLights[" + arrIndex + "].Linear", light.Linear);
+        setFloat("pointLights[" + arrIndex + "].Exp", light.Exp);
     }
 }

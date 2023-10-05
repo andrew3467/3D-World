@@ -21,11 +21,11 @@
 //  2022-05-23: OpenGL: Reworking 2021-12-15 "Using buffer orphaning" so it only happens on Intel GPU, seems to cause problems otherwise. (#4468, #4825, #4832, #5127).
 //  2022-05-13: OpenGL: Fixed state corruption on OpenGL ES 2.0 due to not preserving GL_ELEMENT_ARRAY_BUFFER_BINDING and vertex attribute states.
 //  2021-12-15: OpenGL: Using buffer orphaning + glBufferSubData(), seems to fix leaks with multi-viewports with some Intel HD drivers.
-//  2021-08-23: OpenGL: Fixed ES 3.0 shader ("#version 300 es") use normal precision floats to avoid wobbly rendering at HD resolutions.
+//  2021-08-23: OpenGL: Fixed ES 3.0 lit_shader ("#version 300 es") use normal precision floats to avoid wobbly rendering at HD resolutions.
 //  2021-08-19: OpenGL: Embed and use our own minimal GL loader (imgui_impl_opengl3_loader.h), removing requirement and support for third-party loader.
 //  2021-06-29: Reorganized backend to pull data from a single structure to facilitate usage with multiple-contexts (all g_XXXX access changed to bd->XXXX).
 //  2021-06-25: OpenGL: Use OES_vertex_array extension on Emscripten + backup/restore current state.
-//  2021-06-21: OpenGL: Destroy individual vertex/fragment shader objects right after they are linked into the main shader.
+//  2021-06-21: OpenGL: Destroy individual vertex/fragment lit_shader objects right after they are linked into the main lit_shader.
 //  2021-05-24: OpenGL: Access GL_CLIP_ORIGIN when "GL_ARB_clip_control" extension is detected, inside of just OpenGL 4.5 version.
 //  2021-05-19: OpenGL: Replaced direct access to ImDrawCmd::TextureId with a call to ImDrawCmd::GetTexID(). (will become a requirement)
 //  2021-04-06: OpenGL: Don't try to read GL_CLIP_ORIGIN unless we're OpenGL 4.5 or greater.
@@ -64,7 +64,7 @@
 //  2018-03-06: OpenGL: Added const char* glsl_version parameter to ImGui_ImplOpenGL3_Init() so user can override the GLSL version e.g. "#version 150".
 //  2018-02-23: OpenGL: Create the VAO in the render function so the setup can more easily be used with multiple shared GL context.
 //  2018-02-16: Misc: Obsoleted the io.RenderDrawListsFn callback and exposed ImGui_ImplSdlGL3_RenderDrawData() in the .h file so you can call it yourself.
-//  2018-01-07: OpenGL: Changed GLSL shader version from 330 to 150.
+//  2018-01-07: OpenGL: Changed GLSL lit_shader version from 330 to 150.
 //  2017-09-01: OpenGL: Save and restore current bound sampler. Save and restore current polygon mode.
 //  2017-05-01: OpenGL: Fixed save and restore of current blend func state.
 //  2017-05-01: OpenGL: Fixed save and restore of current GL_ACTIVE_TEXTURE.
@@ -717,13 +717,13 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
             "uniform mat4 ProjMtx;\n"
             "attribute vec2 position;\n"
             "attribute vec2 UV;\n"
-            "attribute vec4 Color;\n"
+            "attribute vec4 Ambient;\n"
             "varying vec2 Frag_UV;\n"
             "varying vec4 Frag_Color;\n"
             "void main()\n"
             "{\n"
             "    Frag_UV = UV;\n"
-            "    Frag_Color = Color;\n"
+            "    Frag_Color = Ambient;\n"
             "    gl_Position = ProjMtx * vec4(position.xy,0,1);\n"
             "}\n";
 
@@ -731,13 +731,13 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
             "uniform mat4 ProjMtx;\n"
             "in vec2 position;\n"
             "in vec2 UV;\n"
-            "in vec4 Color;\n"
+            "in vec4 Ambient;\n"
             "out vec2 Frag_UV;\n"
             "out vec4 Frag_Color;\n"
             "void main()\n"
             "{\n"
             "    Frag_UV = UV;\n"
-            "    Frag_Color = Color;\n"
+            "    Frag_Color = Ambient;\n"
             "    gl_Position = ProjMtx * vec4(position.xy,0,1);\n"
             "}\n";
 
@@ -745,28 +745,28 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
             "precision highp float;\n"
             "layout (location = 0) in vec2 position;\n"
             "layout (location = 1) in vec2 UV;\n"
-            "layout (location = 2) in vec4 Color;\n"
+            "layout (location = 2) in vec4 Ambient;\n"
             "uniform mat4 ProjMtx;\n"
             "out vec2 Frag_UV;\n"
             "out vec4 Frag_Color;\n"
             "void main()\n"
             "{\n"
             "    Frag_UV = UV;\n"
-            "    Frag_Color = Color;\n"
+            "    Frag_Color = Ambient;\n"
             "    gl_Position = ProjMtx * vec4(position.xy,0,1);\n"
             "}\n";
 
     const GLchar* vertex_shader_glsl_410_core =
             "layout (location = 0) in vec2 position;\n"
             "layout (location = 1) in vec2 UV;\n"
-            "layout (location = 2) in vec4 Color;\n"
+            "layout (location = 2) in vec4 Ambient;\n"
             "uniform mat4 ProjMtx;\n"
             "out vec2 Frag_UV;\n"
             "out vec4 Frag_Color;\n"
             "void main()\n"
             "{\n"
             "    Frag_UV = UV;\n"
-            "    Frag_Color = Color;\n"
+            "    Frag_Color = Ambient;\n"
             "    gl_Position = ProjMtx * vec4(position.xy,0,1);\n"
             "}\n";
 
@@ -842,20 +842,20 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
     GLuint vert_handle = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vert_handle, 2, vertex_shader_with_version, nullptr);
     glCompileShader(vert_handle);
-    CheckShader(vert_handle, "vertex shader");
+    CheckShader(vert_handle, "vertex lit_shader");
 
     const GLchar* fragment_shader_with_version[2] = { bd->GlslVersionString, fragment_shader };
     GLuint frag_handle = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(frag_handle, 2, fragment_shader_with_version, nullptr);
     glCompileShader(frag_handle);
-    CheckShader(frag_handle, "fragment shader");
+    CheckShader(frag_handle, "fragment lit_shader");
 
     // Link
     bd->ShaderHandle = glCreateProgram();
     glAttachShader(bd->ShaderHandle, vert_handle);
     glAttachShader(bd->ShaderHandle, frag_handle);
     glLinkProgram(bd->ShaderHandle);
-    CheckProgram(bd->ShaderHandle, "shader program");
+    CheckProgram(bd->ShaderHandle, "lit_shader program");
 
     glDetachShader(bd->ShaderHandle, vert_handle);
     glDetachShader(bd->ShaderHandle, frag_handle);
@@ -866,7 +866,7 @@ bool    ImGui_ImplOpenGL3_CreateDeviceObjects()
     bd->AttribLocationProjMtx = glGetUniformLocation(bd->ShaderHandle, "ProjMtx");
     bd->AttribLocationVtxPos = (GLuint)glGetAttribLocation(bd->ShaderHandle, "position");
     bd->AttribLocationVtxUV = (GLuint)glGetAttribLocation(bd->ShaderHandle, "UV");
-    bd->AttribLocationVtxColor = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Color");
+    bd->AttribLocationVtxColor = (GLuint)glGetAttribLocation(bd->ShaderHandle, "Ambient");
 
     // Create buffers
     glGenBuffers(1, &bd->VboHandle);

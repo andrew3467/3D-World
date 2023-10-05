@@ -16,6 +16,7 @@ add_library(Engine
         Mesh.cpp
         Mesh.h
         Helper/Singleton.h
+        Lights.h
 )
 
 

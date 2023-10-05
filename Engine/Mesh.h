@@ -12,10 +12,23 @@
 #include "../Renderer/Shader.h"
 
 
+struct Vertex{
+    glm::vec3 Position;
+    glm::vec3 Normal;
+    glm::vec2 UV;
+    glm::vec3 Color;
+
+    Vertex(glm::vec3 p, glm::vec3 n, glm::vec2 u, glm::vec3 c)
+        : Position(p), Normal(n), UV(u), Color(c)
+    {
+
+    }
+};
+
 class Mesh {
 public:
-    Mesh(std::vector<glm::vec3> vertices, std::vector<unsigned int> indices);
-    Mesh(std::vector<glm::vec3> vertices);
+    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices);
+    Mesh(std::vector<Vertex> vertices);
     Mesh();
     ~Mesh();
 
@@ -28,13 +41,13 @@ public:
     static void DrawMeshes(Renderer::Shader& shader);
 
     void draw(Renderer::Shader& shader);
-    void updateMeshData(std::vector<glm::vec3> &vertices, std::vector<unsigned int> &indices);
-    void updateMeshData(std::vector<glm::vec3> &vertices);
+    void updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices);
+    void updateMeshData(std::vector<Vertex> &vertices);
 
 private:
     bool indexedBuffer = true;
 
-    std::vector<glm::vec3> m_Vertices;
+    std::vector<Vertex> m_Vertices;
     std::vector<unsigned int> m_Indices;
 
     unsigned int VAO, VBO, EBO;
