@@ -10,6 +10,12 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <yaml.h>
+
+
+
+
+
 namespace WorldGenerator {
 
     bool imGUIActive = false;
@@ -56,6 +62,8 @@ namespace WorldGenerator {
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 4.0f);
 
         m_TerrainChunk = std::make_unique<TerrainChunk>(&m_TerrainConfig);
+
+        loadConfig();
     }
 
     void Application::onClose() {
@@ -80,22 +88,11 @@ namespace WorldGenerator {
         glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
+        drawLights();
+
+
         glm::mat4 model = glm::mat4(1.0f);
-
-        //Draw Point Lights
-        unlit_shader->bind();
-        glm::mat4 vp = m_Camera->viewProjection(m_Window->getSize());
-
-        for(auto& light : m_Lights){
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), light.Position);
-            model = glm::scale(model, glm::vec3(0.25f));
-            unlit_shader->setMat4("mvp",  vp * model);
-            unlit_shader->setVec3("color", light.Ambient);
-
-            Renderer::Renderer::DrawCube(*unlit_shader);
-        }
-
-
 
         lit_shader->bind();
 
@@ -113,6 +110,21 @@ namespace WorldGenerator {
         lit_shader->setMat4("vp", m_Camera->viewProjection(m_Window->getSize()));
 
         Mesh::DrawMeshes(*lit_shader);
+    }
+
+    void Application::drawLights() {
+        //Draw Point Lights
+        unlit_shader->bind();
+        glm::mat4 vp = m_Camera->viewProjection(m_Window->getSize());
+
+        for(auto& light : m_Lights){
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), light.Position);
+            model = glm::scale(model, glm::vec3(0.25f));
+            unlit_shader->setMat4("mvp",  vp * model);
+            unlit_shader->setVec3("color", light.Ambient);
+
+            Renderer::Renderer::DrawCube(*unlit_shader);
+        }
     }
 
     void Application::onImGUIRender() {
@@ -208,7 +220,19 @@ namespace WorldGenerator {
     }
 
     void Application::saveConfig() {
+        yaml_parser_t parser;
+        yaml_event_t event;
+        int done = 0;
 
+        yaml_parser_initialize(&parser);
+
+        std::string input =  "...";
+        size_t length = input.size();
+        yaml_parser_set_input_string(&parser, input.c_str(), length);
+
+
+
+        yaml_parser_delete(&parser);
     }
 
     void Application::loadConfig() {

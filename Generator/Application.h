@@ -28,6 +28,8 @@ namespace WorldGenerator {
         void saveConfig();
         void loadConfig();
 
+        void drawLights();
+
         void processInput(GLFWwindow* window);
     public:
 
