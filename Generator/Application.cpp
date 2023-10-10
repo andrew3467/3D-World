@@ -10,7 +10,8 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <yaml.h>
+
+#include <yaml-cpp/yaml.h>
 
 
 
@@ -220,24 +221,70 @@ namespace WorldGenerator {
     }
 
     void Application::saveConfig() {
-        yaml_parser_t parser;
-        yaml_event_t event;
-        int done = 0;
-
-        yaml_parser_initialize(&parser);
-
-        std::string input =  "...";
-        size_t length = input.size();
-        yaml_parser_set_input_string(&parser, input.c_str(), length);
+        YAML::Node config;
 
 
+        config["Terrain Settings"]["Seed"] = m_TerrainConfig.seed;
+        config["Terrain Settings"]["Size"] = m_TerrainConfig.size;
+        config["Terrain Settings"]["Height"] = m_TerrainConfig.height;
+        config["Terrain Settings"]["Resolution"] = m_TerrainConfig.resolution;
+        config["Terrain Settings"]["ISO Level"] = m_TerrainConfig.isoLevel;
 
-        yaml_parser_delete(&parser);
+        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.x);
+        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.y);
+        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.z);
+
+        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.x);
+        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.y);
+        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.z);
+
+        config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.x);
+        config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.y);
+
+        config["Terrain Settings"]["Height Multiplier"] = m_TerrainConfig.heightMultiplier;
+
+        config["Noise Settings"]["Frequency"] = m_TerrainConfig.frequency;
+        config["Noise Settings"]["Amplitude"] = m_TerrainConfig.amplitude;
+        config["Noise Settings"]["Lacunarity"] = m_TerrainConfig.lacunarity;
+        config["Noise Settings"]["Persistence"] = m_TerrainConfig.persistence;
+
+        config["Noise Settings"]["Octaves"] = m_TerrainConfig.octaves;
+
+
+        std::ofstream fout("config.yaml");
+        fout << config;
     }
 
     void Application::loadConfig() {
+        YAML::Node config = YAML::LoadFile("config.yaml");
 
+        m_TerrainConfig.seed = config["Terrain Settings"]["Seed"].as<int>();
+        m_TerrainConfig.size = config["Terrain Settings"]["Size"].as<int>();
+        m_TerrainConfig.height = config["Terrain Settings"]["Height"].as<int>();
+        m_TerrainConfig.resolution = config["Terrain Settings"]["Resolution"].as<int>();
+        m_TerrainConfig.isoLevel = config["Terrain Settings"]["ISO Level"].as<float>();
+
+
+        m_TerrainConfig.color.x = config["Terrain Settings"]["Color"][0].as<float>();
+        m_TerrainConfig.color.y = config["Terrain Settings"]["Color"][1].as<float>();
+        m_TerrainConfig.color.z = config["Terrain Settings"]["Color"][2].as<float>();
+
+
+        m_TerrainConfig.noiseOffset.x = config["Noise Settings"]["Offsets"][0].as<float>();
+        m_TerrainConfig.noiseOffset.y = config["Noise Settings"]["Offsets"][1].as<float>();
+        m_TerrainConfig.noiseOffset.z = config["Noise Settings"]["Offsets"][2].as<float>();
+
+        m_TerrainConfig.noiseScale.x = config["Noise Settings"]["Noise Scale"][0].as<float>();
+        m_TerrainConfig.noiseScale.y = config["Noise Settings"]["Noise Scale"][1].as<float>();
+
+        m_TerrainConfig.heightMultiplier = config["Terrain Settings"]["Height Multiplier"].as<float>();
+
+        m_TerrainConfig.frequency = config["Noise Settings"]["Frequency"].as<float>();
+        m_TerrainConfig.amplitude = config["Noise Settings"]["Amplitude"].as<float>();
+        m_TerrainConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();
+        m_TerrainConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
     }
+
 
     void Application::processInput(GLFWwindow *window) {
         if(glfwGetKey(window, GLFW_KEY_W)){

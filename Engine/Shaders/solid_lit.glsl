@@ -114,5 +114,5 @@ void main() {
 
     vec3 result = baseColor * lighting;
 
-    FragColor = vec4(fs_in.UV, 0.0, 1.0);
+    FragColor = vec4(result, 1.0);
 }

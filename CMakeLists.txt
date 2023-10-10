@@ -11,6 +11,7 @@ add_subdirectory(Generator)
 
 set(SHADERS
     ${CMAKE_SOURCE_DIR}/Engine/Shaders/solid_unlit.glsl
+    ${CMAKE_SOURCE_DIR}/Engine/Shaders/solid_lit.glsl
 )
 
 

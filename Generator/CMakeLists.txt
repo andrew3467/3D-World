@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(glm CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
-find_package(yaml CONFIG REQUIRED)
+find_package(yaml-cpp CONFIG REQUIRED)
 
 
 
@@ -40,5 +40,5 @@ target_link_libraries(World_Generator
         PUBLIC
         glm::glm
         imgui::imgui
-        yaml
+        yaml-cpp
 )

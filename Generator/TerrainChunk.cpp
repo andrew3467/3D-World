@@ -128,7 +128,8 @@ void TerrainChunk::createMarchingCubesMesh3D() {
 
 
 
-                noiseValues[indexFrom3D(x, y, z)] = noiseValue + y;
+                noiseValues[indexFrom3D(x, y, z)] = noiseValue;
+                //noiseValues[indexFrom3D(x, y, z)] = noiseValue + y;
             }
         }
     }
