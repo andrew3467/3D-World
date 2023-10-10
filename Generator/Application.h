@@ -49,6 +49,7 @@ namespace WorldGenerator {
         std::unique_ptr<TerrainChunk> m_TerrainChunk;
 
         std::vector<PointLight> m_Lights;
+        DirectionalLight dirLight;
 
     private:
         static void onKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods);

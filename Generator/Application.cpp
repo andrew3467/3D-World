@@ -62,9 +62,10 @@ namespace WorldGenerator {
 
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 4.0f);
 
+        loadConfig();
+
         m_TerrainChunk = std::make_unique<TerrainChunk>(&m_TerrainConfig);
 
-        loadConfig();
     }
 
     void Application::onClose() {
@@ -98,6 +99,11 @@ namespace WorldGenerator {
         lit_shader->bind();
 
         lit_shader->setVec3("viewPos", m_Camera->position());
+
+        lit_shader->setVec3("dirLight.direction", dirLight.Direction);
+        lit_shader->setVec3("dirLight.ambient", dirLight.Ambient);
+        lit_shader->setVec3("dirLight.diffuse", dirLight.Diffuse);
+        lit_shader->setVec3("dirLight.specular", dirLight.Specular);
 
         lit_shader->setInt("numLights", m_Lights.size());
         for(int i = 0; i < m_Lights.size(); i++){
@@ -186,11 +192,18 @@ namespace WorldGenerator {
 
             updateMesh |= ImGui::ColorPicker3("Ambient", &m_TerrainConfig.color.x);
         }
-        if(ImGui::CollapsingHeader("Lighting Config")){
+        if(ImGui::CollapsingHeader("Lighting Config")) {
             ImGui::Indent();
 
-            if(ImGui::Button("Create Point Light")){
-               m_Lights.emplace_back();
+            if (ImGui::Button("Create Point Light")) {
+                m_Lights.emplace_back();
+            }
+
+            if (ImGui::CollapsingHeader("Directional Light")) {
+                ImGui::SliderFloat3("Direction", &dirLight.Direction.x, -180.0f, 180.0f);
+                ImGui::ColorPicker3("Ambient", &dirLight.Ambient.x);
+                ImGui::ColorPicker3("Diffuse", &dirLight.Diffuse.x);
+                ImGui::ColorPicker3("Specular", &dirLight.Specular.x);
             }
 
             //Individual Configs

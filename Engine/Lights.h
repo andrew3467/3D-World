@@ -19,4 +19,12 @@ struct PointLight{
     float Exp = 0.125f;
 };
 
+struct DirectionalLight{
+    glm::vec3 Direction = {-0.2f, -1.0f, -0.3f};
+
+    glm::vec3 Ambient;
+    glm::vec3 Diffuse;
+    glm::vec3 Specular;
+};
+
 #endif //APPLICATION_LIGHTS_H
