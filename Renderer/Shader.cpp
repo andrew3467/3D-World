@@ -11,8 +11,6 @@
 #include <glad/glad.h>
 #include "Shader.h"
 
-
-namespace Renderer {
     Shader::Shader() : m_Handle(0) {
 
     }
@@ -179,4 +177,8 @@ namespace Renderer {
         setFloat("pointLights[" + arrIndex + "].Linear", light.Linear);
         setFloat("pointLights[" + arrIndex + "].Exp", light.Exp);
     }
+
+void Shader::initializeShaders() {
+    Shaders::solid_unlit = new Shader("../Engine/Shaders/solid_unlit.glsl");
+    Shaders::solid_lit = new Shader("../Engine/Shaders/solid_lit.glsl");
 }

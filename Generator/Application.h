@@ -12,6 +12,9 @@
 #include "../Engine/Window.h"
 #include "TerrainChunk.h"
 #include "../Engine/Lights.h"
+#define glm_enable_experimental
+#include "glm/gtx/hash.hpp"
+
 
 namespace WorldGenerator {
     class Application {
@@ -41,14 +44,16 @@ namespace WorldGenerator {
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
 
-        std::unique_ptr<Renderer::Shader> lit_shader;
-        std::unique_ptr<Renderer::Shader> unlit_shader;
         std::unique_ptr<Camera> m_Camera;
 
         std::unique_ptr<Window> m_Window;
         TerrainConfig m_TerrainConfig;
 
-        std::unique_ptr<TerrainChunk> m_TerrainChunk;
+        int m_ViewDistance = 4;
+
+        //std::unique_ptr<TerrainChunk> m_TerrainChunk;
+        std::unordered_map<glm::ivec2, TerrainChunk> m_TerrainChunks;
+        std::vector<glm::ivec2> m_ActiveTerrainChunks;
 
         std::vector<PointLight> m_Lights;
         DirectionalLight dirLight;

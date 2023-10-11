@@ -8,12 +8,13 @@
 
 #include <memory>
 #include "../Engine/Mesh.h"
+#include "../Engine/MeshRenderer.h"
+#include "../Engine/Transform.h"
 
 enum GenerationType {
     HeightMap = 0,
     MarchingCube3D = 1
 };
-
 struct TerrainConfig {
     GenerationType genType = HeightMap;
 
@@ -54,12 +55,13 @@ private:
 
 public:
     void updateMesh();
+    void draw();
 
 private:
     TerrainConfig* m_Config;
     std::unique_ptr<Mesh> m_Mesh;
-
-    glm::vec3 m_Position;
+    std::unique_ptr<MeshRenderer> m_MeshRenderer;
+    Transform m_Transform;
 
     int m_Size;
     int m_Height;

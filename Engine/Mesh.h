@@ -38,9 +38,7 @@ private:
     void setUpBuffers();
 
 public:
-    static void DrawMeshes(Renderer::Shader& shader);
-
-    void draw(Renderer::Shader& shader);
+    void draw(Shader& shader);
     void updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices);
     void updateMeshData(std::vector<Vertex> &vertices);
 
@@ -51,9 +49,6 @@ private:
     std::vector<unsigned int> m_Indices;
 
     unsigned int VAO, VBO, EBO;
-
-public:
-    static std::vector<Mesh*> Meshes;
 };
 
 

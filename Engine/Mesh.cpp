@@ -9,22 +9,17 @@
 #include <utility>
 
 
-std::vector<Mesh*> Mesh::Meshes = std::vector<Mesh*>();
-
 Mesh::Mesh() : VAO(0), VBO(0), EBO(0) {
-    Meshes.push_back(this);
 }
 
 Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices)
         : m_Vertices(std::move(vertices)), m_Indices(std::move(indices)), VAO(0), VBO(0), EBO(0)
 {
     setUpBuffers();
-    Meshes.push_back(this);
 }
 
 Mesh::Mesh(std::vector<Vertex> vertices) : m_Vertices(std::move(vertices)), VAO(0), VBO(0), EBO(0){
     setUpBuffers();
-    Meshes.push_back(this);
 }
 
 void Mesh::setUpBuffers() {
@@ -77,13 +72,7 @@ void Mesh::updateMeshData(std::vector<Vertex> &vertices) {
     setUpBuffers();
 }
 
-void Mesh::DrawMeshes(Renderer::Shader &shader) {
-    for(auto& mesh : Meshes){
-        mesh->draw(shader);
-    }
-}
-
-void Mesh::draw(Renderer::Shader &shader) {
+void Mesh::draw(Shader &shader) {
     if(indexedBuffer){
         Renderer::Renderer::Draw(VAO, m_Indices.size(), shader, true);
     }

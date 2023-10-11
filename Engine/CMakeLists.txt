@@ -17,6 +17,10 @@ add_library(Engine
         Mesh.h
         Helper/Singleton.h
         Lights.h
+        MeshRenderer.cpp
+        MeshRenderer.h
+        Transform.h
+        Transform.cpp
 )
 
 

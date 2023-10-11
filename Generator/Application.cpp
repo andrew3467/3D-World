@@ -17,8 +17,8 @@
 
 
 
-namespace WorldGenerator {
 
+namespace WorldGenerator {
     bool imGUIActive = false;
     bool wireFrameMode = false;
 
@@ -43,6 +43,8 @@ namespace WorldGenerator {
 
         glEnable(GL_DEPTH_TEST);
 
+        Shader::initializeShaders();
+
 
         //Setup IMGUI
         IMGUI_CHECKVERSION();
@@ -57,15 +59,9 @@ namespace WorldGenerator {
         ImGui_ImplGlfw_InitForOpenGL(m_Window->getWindow(), true);
         ImGui_ImplOpenGL3_Init(glsl_version);
 
-        lit_shader = std::make_unique<Renderer::Shader>("../Engine/Shaders/solid_lit.glsl");
-        unlit_shader = std::make_unique<Renderer::Shader>("../Engine/Shaders/solid_unlit.glsl");
-
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 4.0f);
 
         loadConfig();
-
-        m_TerrainChunk = std::make_unique<TerrainChunk>(glm::vec3(0.0f), &m_TerrainConfig);
-
     }
 
     void Application::onClose() {
@@ -94,47 +90,46 @@ namespace WorldGenerator {
         drawLights();
 
 
-        glm::mat4 model = glm::mat4(1.0f);
+        Shaders::solid_lit->bind();
 
-        lit_shader->bind();
+        Shaders::solid_lit->setVec3("viewPos", m_Camera->position());
 
-        lit_shader->setVec3("viewPos", m_Camera->position());
+        Shaders::solid_lit->setVec3("dirLight.direction", dirLight.Direction);
+        Shaders::solid_lit->setVec3("dirLight.ambient", dirLight.Ambient);
+        Shaders::solid_lit->setVec3("dirLight.diffuse", dirLight.Diffuse);
+        Shaders::solid_lit->setVec3("dirLight.specular", dirLight.Specular);
 
-        lit_shader->setVec3("dirLight.direction", dirLight.Direction);
-        lit_shader->setVec3("dirLight.ambient", dirLight.Ambient);
-        lit_shader->setVec3("dirLight.diffuse", dirLight.Diffuse);
-        lit_shader->setVec3("dirLight.specular", dirLight.Specular);
-
-        lit_shader->setInt("numLights", m_Lights.size());
+        Shaders::solid_lit->setInt("numLights", m_Lights.size());
         for(int i = 0; i < m_Lights.size(); i++){
             std::string arrIndex = std::to_string(i);
-            lit_shader->setPointLight(arrIndex, m_Lights[i]);
+            Shaders::solid_lit->setPointLight(arrIndex, m_Lights[i]);
         }
 
-        lit_shader->setVec3("baseColor", m_TerrainConfig.color);
+        Shaders::solid_lit->setVec3("baseColor", m_TerrainConfig.color);
 
-        lit_shader->setMat4("model", model);
-        lit_shader->setMat4("vp", m_Camera->viewProjection(m_Window->getSize()));
-
-        Mesh::DrawMeshes(*lit_shader);
+        Shaders::solid_lit->setMat4("vp", m_Camera->viewProjection(m_Window->getSize()));
+        
+        for(auto& chunkID : m_ActiveTerrainChunks){
+            
+        }
     }
 
     void Application::updateActiveChunks() {
-
+        glm::vec3 viewerPos = m_Camera->position();
     }
 
     void Application::drawLights() {
-        //Draw Point Lights
-        unlit_shader->bind();
+        //draw Point Lights
+        Shaders::solid_unlit->bind();
         glm::mat4 vp = m_Camera->viewProjection(m_Window->getSize());
 
         for(auto& light : m_Lights){
             glm::mat4 model = glm::translate(glm::mat4(1.0f), light.Position);
             model = glm::scale(model, glm::vec3(0.25f));
-            unlit_shader->setMat4("mvp",  vp * model);
-            unlit_shader->setVec3("color", light.Ambient);
+            Shaders::solid_unlit->setMat4("mvp",  vp * model);
+            Shaders::solid_unlit->setVec3("color", light.Ambient);
 
-            Renderer::Renderer::DrawCube(*unlit_shader);
+            Renderer::Renderer::DrawCube(*Shaders::solid_unlit);
         }
     }
 
@@ -148,6 +143,8 @@ namespace WorldGenerator {
         ImGui::NewFrame();
 
         ImGui::Begin("Config Window");
+
+        ImGui::SliderInt("View Distance", &m_ViewDistance, 1, 8);
 
         bool updateMesh = false;
         if(ImGui::CollapsingHeader("Terrain Config")) {
@@ -228,7 +225,9 @@ namespace WorldGenerator {
 
 
         if(updateMesh){
-            m_TerrainChunk->updateMesh();
+            for(auto& c : m_TerrainChunks){
+                c.second.updateMesh();
+            }
         }
 
 
@@ -271,9 +270,9 @@ namespace WorldGenerator {
         std::ofstream fout("config.yaml");
         fout << config;
     }
-
     void Application::loadConfig() {
         YAML::Node config = YAML::LoadFile("config.yaml");
+
 
         m_TerrainConfig.seed = config["Terrain Settings"]["Seed"].as<int>();
         m_TerrainConfig.size = config["Terrain Settings"]["Size"].as<int>();
@@ -300,6 +299,8 @@ namespace WorldGenerator {
         m_TerrainConfig.amplitude = config["Noise Settings"]["Amplitude"].as<float>();
         m_TerrainConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();
         m_TerrainConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
+
+        m_TerrainConfig.octaves = config["Noise Settings"]["Octaves"].as<int>();
     }
 
 
@@ -324,7 +325,6 @@ namespace WorldGenerator {
             m_Camera->rotate((float) mouseX, (float) mouseY);
         }
     }
-
     void Application::onKeyPressed(GLFWwindow *window, int key, int scancode, int action, int mods) {
         Application* app = (Application*) glfwGetWindowUserPointer(window);
 
@@ -347,7 +347,6 @@ namespace WorldGenerator {
 
         }
     }
-
     void Application::onScroll(GLFWwindow* window, double xoffset, double yoffset) {
         Application* app = (Application*) glfwGetWindowUserPointer(window);
 
