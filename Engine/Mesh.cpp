@@ -59,6 +59,9 @@ Mesh::~Mesh() {
 }
 
 void Mesh::updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices) {
+    m_Vertices.clear();
+    m_Indices.clear();
+
     m_Vertices = vertices;
     m_Indices =  indices;
 
@@ -67,6 +70,7 @@ void Mesh::updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned in
 }
 
 void Mesh::updateMeshData(std::vector<Vertex> &vertices) {
+    m_Vertices.clear();
     m_Vertices = vertices;
 
     indexedBuffer = false;

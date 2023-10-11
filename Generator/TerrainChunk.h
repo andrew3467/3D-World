@@ -39,7 +39,7 @@ struct TerrainConfig {
 
 class TerrainChunk {
 public:
-    TerrainChunk(TerrainConfig* config);
+    TerrainChunk(glm::vec3 pos, TerrainConfig* config);
     ~TerrainChunk();
 
 
@@ -58,6 +58,8 @@ public:
 private:
     TerrainConfig* m_Config;
     std::unique_ptr<Mesh> m_Mesh;
+
+    glm::vec3 m_Position;
 
     int m_Size;
     int m_Height;

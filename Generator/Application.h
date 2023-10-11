@@ -30,6 +30,8 @@ namespace WorldGenerator {
 
         void drawLights();
 
+        void updateActiveChunks();
+
         void processInput(GLFWwindow* window);
     public:
 

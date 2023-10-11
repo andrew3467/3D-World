@@ -22,9 +22,9 @@ struct PointLight{
 struct DirectionalLight{
     glm::vec3 Direction = {-0.2f, -1.0f, -0.3f};
 
-    glm::vec3 Ambient;
-    glm::vec3 Diffuse;
-    glm::vec3 Specular;
+    glm::vec3 Ambient = {1.0f, 1.0f, 1.0f};
+    glm::vec3 Diffuse = {0.5f, 0.5f, 0.5f};
+    glm::vec3 Specular = {0.25f, 0.25f, 0.25f};
 };
 
 #endif //APPLICATION_LIGHTS_H

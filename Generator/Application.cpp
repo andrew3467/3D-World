@@ -64,7 +64,7 @@ namespace WorldGenerator {
 
         loadConfig();
 
-        m_TerrainChunk = std::make_unique<TerrainChunk>(&m_TerrainConfig);
+        m_TerrainChunk = std::make_unique<TerrainChunk>(glm::vec3(0.0f), &m_TerrainConfig);
 
     }
 
@@ -119,6 +119,10 @@ namespace WorldGenerator {
         Mesh::DrawMeshes(*lit_shader);
     }
 
+    void Application::updateActiveChunks() {
+
+    }
+
     void Application::drawLights() {
         //Draw Point Lights
         unlit_shader->bind();
@@ -160,7 +164,7 @@ namespace WorldGenerator {
 
             updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 1, genTypeName);
             updateMesh |= ImGui::SliderInt("Seed", &m_TerrainConfig.seed, 0, 32767);
-            updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 16);
+            updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 64);
             updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 5);
 
             if(ImGui::CollapsingHeader("Noise Config")){
@@ -169,7 +173,7 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
                 updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
                 updateMesh |= ImGui::SliderFloat("Frequency", &m_TerrainConfig.frequency, 0.0f, 4.0f);
-                updateMesh |= ImGui::SliderFloat("Amplitude", &m_TerrainConfig.amplitude, 0.0f, 1.0f);
+                updateMesh |= ImGui::SliderFloat("Amplitude", &m_TerrainConfig.amplitude, 1.0f, 10.0f);
                 updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
                 updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
             }
@@ -356,4 +360,5 @@ namespace WorldGenerator {
             app->GetCamera()->increaseMoveSpeed(-1.0f);
         }
     }
+
 }

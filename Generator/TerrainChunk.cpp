@@ -7,7 +7,7 @@
 #include "../external/Simplex/SimplexNoise.h"
 
 
-TerrainChunk::TerrainChunk(TerrainConfig *config) : m_Config(config) {
+TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config) : m_Config(config), m_Position(pos) {
     m_Mesh = std::make_unique<Mesh>();
 
     switch (m_Config->genType) {
