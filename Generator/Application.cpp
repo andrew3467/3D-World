@@ -153,13 +153,22 @@ namespace WorldGenerator {
     }
 
     void Application::updateFPS() {
+        static double lastFrame = 0;
+        // Measure speed
         double currentTime = glfwGetTime();
+        double delta = currentTime - lastFrame;
         frameCount++;
-        // If a second has passed.
-        if ( currentTime - previousTime >= 1.0 )
-        {
+        if ( delta >= 1.0 ){ // If last cout was more than 1 sec ago
+
+            int fps = double(frameCount) / delta;
+
+            std::stringstream ss;
+            ss << "3D World" << " [" << fps << " FPS]";
+
+            glfwSetWindowTitle(m_Window->getWindow(), ss.str().c_str());
+
             frameCount = 0;
-            previousTime = currentTime;
+            lastFrame = currentTime;
         }
     }
 
@@ -192,7 +201,6 @@ namespace WorldGenerator {
 
         ImGui::Begin("Config Window");
 
-        ImGui::Text("FPS: %i", frameCount  );
 
         ImGui::Checkbox("Infinite Terrain", &infiniteTerrain);
         ImGui::SliderInt("View Distance", &m_ViewDistance, 1, 8);

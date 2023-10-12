@@ -18,6 +18,8 @@ Window::Window(int width, int height, std::string title)
     glfwMakeContextCurrent(m_Window);
     glfwSetWindowUserPointer(m_Window, this);
 
+    glfwSwapInterval(0);
+
     if(!GladInitialized){
         initGLAD();
     }

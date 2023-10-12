@@ -44,7 +44,7 @@ namespace WorldGenerator {
     private:
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
-        int frameCount = 0;
+        int frameCount=0;
 
         std::unique_ptr<Camera> m_Camera;
 
