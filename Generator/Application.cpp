@@ -21,6 +21,7 @@
 namespace WorldGenerator {
     bool imGUIActive = false;
     bool wireFrameMode = false;
+    bool infiniteTerrain = false;
 
     void Application::Run() {
         onStart();
@@ -75,11 +76,15 @@ namespace WorldGenerator {
     void Application::onTick() {
         processInput(m_Window->getWindow());
 
+        updateActiveChunks();
+
         m_Window->tick();
 
         float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+
+        updateFPS();
     }
 
     void Application::onRender() {
@@ -107,15 +112,55 @@ namespace WorldGenerator {
 
         Shaders::solid_lit->setVec3("baseColor", m_TerrainConfig.color);
 
-        Shaders::solid_lit->setMat4("vp", m_Camera->viewProjection(m_Window->getSize()));
-        
-        for(auto& chunkID : m_ActiveTerrainChunks){
-            
+        Shaders::solid_lit->setMat4("projection", m_Camera->projection(m_Window->getSize()));
+        Shaders::solid_lit->setMat4("view", m_Camera->view());
+
+        if(infiniteTerrain){
+            for (auto &chunkID: m_ActiveTerrainChunks) {
+                m_TerrainChunks.at(chunkID)->draw();
+            }
+        }else{
+            m_TerrainChunks.at({0,0})->draw();
         }
     }
 
     void Application::updateActiveChunks() {
+        if(!infiniteTerrain) {
+            glm::ivec2 chunkCoord(0,0);
+            if(m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()){
+                m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
+            }
+
+            return;
+        }
+
         glm::vec3 viewerPos = m_Camera->position();
+        glm::ivec2 viewerChunkCoord = {viewerPos.x / m_TerrainConfig.size,
+                                      viewerPos.z / m_TerrainConfig.size};
+
+        m_ActiveTerrainChunks.clear();
+        for(int z = -m_ViewDistance; z < m_ViewDistance; z++){
+            for(int x = -m_ViewDistance; x < m_ViewDistance; x++){
+                glm::ivec2 chunkCoord = glm::ivec2(x, z) + viewerChunkCoord;
+
+                if(m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()){
+                    m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
+                }
+
+                m_ActiveTerrainChunks.push_back(chunkCoord);
+            }
+        }
+    }
+
+    void Application::updateFPS() {
+        double currentTime = glfwGetTime();
+        frameCount++;
+        // If a second has passed.
+        if ( currentTime - previousTime >= 1.0 )
+        {
+            frameCount = 0;
+            previousTime = currentTime;
+        }
     }
 
     void Application::drawLights() {
@@ -123,10 +168,13 @@ namespace WorldGenerator {
         Shaders::solid_unlit->bind();
         glm::mat4 vp = m_Camera->viewProjection(m_Window->getSize());
 
+        Shaders::solid_unlit->setMat4("projection", m_Camera->projection(m_Window->getSize()));
+        Shaders::solid_unlit->setMat4("view", m_Camera->view());
+
         for(auto& light : m_Lights){
             glm::mat4 model = glm::translate(glm::mat4(1.0f), light.Position);
             model = glm::scale(model, glm::vec3(0.25f));
-            Shaders::solid_unlit->setMat4("mvp",  vp * model);
+            Shaders::solid_unlit->setMat4("model",  model);
             Shaders::solid_unlit->setVec3("color", light.Ambient);
 
             Renderer::Renderer::DrawCube(*Shaders::solid_unlit);
@@ -144,6 +192,9 @@ namespace WorldGenerator {
 
         ImGui::Begin("Config Window");
 
+        ImGui::Text("FPS: %i", frameCount  );
+
+        ImGui::Checkbox("Infinite Terrain", &infiniteTerrain);
         ImGui::SliderInt("View Distance", &m_ViewDistance, 1, 8);
 
         bool updateMesh = false;
@@ -226,7 +277,7 @@ namespace WorldGenerator {
 
         if(updateMesh){
             for(auto& c : m_TerrainChunks){
-                c.second.updateMesh();
+                c.second->updateMesh();
             }
         }
 
@@ -265,6 +316,24 @@ namespace WorldGenerator {
         config["Noise Settings"]["Persistence"] = m_TerrainConfig.persistence;
 
         config["Noise Settings"]["Octaves"] = m_TerrainConfig.octaves;
+        
+        
+        //LIGHTS
+        config["Light Settings"]["Directional Light"]["Direction"].push_back(dirLight.Direction.x);
+        config["Light Settings"]["Directional Light"]["Direction"].push_back(dirLight.Direction.y);
+        config["Light Settings"]["Directional Light"]["Direction"].push_back(dirLight.Direction.z);
+        
+        config["Light Settings"]["Directional Light"]["Ambient"].push_back(dirLight.Ambient.x);
+        config["Light Settings"]["Directional Light"]["Ambient"].push_back(dirLight.Ambient.y);
+        config["Light Settings"]["Directional Light"]["Ambient"].push_back(dirLight.Ambient.z);
+
+        config["Light Settings"]["Directional Light"]["Diffuse"].push_back(dirLight.Diffuse.x);
+        config["Light Settings"]["Directional Light"]["Diffuse"].push_back(dirLight.Diffuse.y);
+        config["Light Settings"]["Directional Light"]["Diffuse"].push_back(dirLight.Diffuse.z);
+
+        config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.x);
+        config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.y);
+        config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.z);
 
 
         std::ofstream fout("config.yaml");
@@ -301,6 +370,23 @@ namespace WorldGenerator {
         m_TerrainConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
 
         m_TerrainConfig.octaves = config["Noise Settings"]["Octaves"].as<int>();
+
+        //LIGHTS
+        dirLight.Direction.x = config["Light Settings"]["Directional Light"]["Direction"][0].as<float>();
+        dirLight.Direction.y = config["Light Settings"]["Directional Light"]["Direction"][1].as<float>();
+        dirLight.Direction.z = config["Light Settings"]["Directional Light"]["Direction"][2].as<float>();
+
+        dirLight.Ambient.x = config["Light Settings"]["Directional Light"]["Ambient"][0].as<float>();
+        dirLight.Ambient.y = config["Light Settings"]["Directional Light"]["Ambient"][1].as<float>();
+        dirLight.Ambient.z = config["Light Settings"]["Directional Light"]["Ambient"][2].as<float>();
+
+        dirLight.Diffuse.x = config["Light Settings"]["Directional Light"]["Diffuse"][0].as<float>();
+        dirLight.Diffuse.y = config["Light Settings"]["Directional Light"]["Diffuse"][1].as<float>();
+        dirLight.Diffuse.z = config["Light Settings"]["Directional Light"]["Diffuse"][2].as<float>();
+
+        dirLight.Specular.x = config["Light Settings"]["Directional Light"]["Specular"][0].as<float>();
+        dirLight.Specular.y = config["Light Settings"]["Directional Light"]["Specular"][1].as<float>();
+        dirLight.Specular.z = config["Light Settings"]["Directional Light"]["Specular"][2].as<float>();
     }
 
 

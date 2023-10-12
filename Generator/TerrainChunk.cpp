@@ -11,7 +11,7 @@ TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config) : m_Config(conf
     m_Mesh = std::make_unique<Mesh>();
     m_MeshRenderer = std::make_unique<MeshRenderer>(m_Mesh.get());
 
-    m_Transform.Position = pos;
+    m_Transform.Position = pos * glm::vec3(m_Config->size - 1, 0, m_Config->size - 1);
 
     switch (m_Config->genType) {
         case HeightMap:
@@ -67,8 +67,8 @@ void TerrainChunk::createHeightMapMesh() {
             float zPos = z / (float) (resolution);
 
             float height = simplexNoise.fractal(m_Config->octaves,
-                                        (xPos + m_Config->noiseOffset.x) * m_Config->noiseScale.x,
-                                           (zPos + m_Config->noiseOffset.y) * m_Config->noiseScale.x);
+                                        (xPos + m_Config->noiseOffset.x + m_Transform.Position.x) * m_Config->noiseScale.x,
+                                           (zPos + m_Config->noiseOffset.y + m_Transform.Position.z) * m_Config->noiseScale.x);
 
             //Normalize between 0 and 1
             height = (1 + height) / 2.0f;
@@ -150,9 +150,9 @@ void TerrainChunk::createMarchingCubesMesh3D() {
 
 
                 float noiseValue = simplexNoise.fractal(m_Config->octaves,
-                                                        (xPos + m_Config->noiseOffset.x) * m_Config->noiseScale.x,
-                                                        (yPos + m_Config->noiseOffset.y) * m_Config->noiseScale.y,
-                                                        (zPos + m_Config->noiseOffset.z) * m_Config->noiseScale.x);
+                                                        (xPos + m_Config->noiseOffset.x + m_Transform.Position.x) * m_Config->noiseScale.x,
+                                                        (yPos + m_Config->noiseOffset.y + m_Transform.Position.y) * m_Config->noiseScale.y,
+                                                        (zPos + m_Config->noiseOffset.z + m_Transform.Position.z) * m_Config->noiseScale.x);
 
 
                 //noiseValues[indexFrom3D(x, y, z)] = noiseValue;

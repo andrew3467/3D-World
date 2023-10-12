@@ -34,6 +34,7 @@ namespace WorldGenerator {
         void drawLights();
 
         void updateActiveChunks();
+        void updateFPS();
 
         void processInput(GLFWwindow* window);
     public:
@@ -43,6 +44,7 @@ namespace WorldGenerator {
     private:
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
+        int frameCount = 0;
 
         std::unique_ptr<Camera> m_Camera;
 
@@ -51,8 +53,7 @@ namespace WorldGenerator {
 
         int m_ViewDistance = 4;
 
-        //std::unique_ptr<TerrainChunk> m_TerrainChunk;
-        std::unordered_map<glm::ivec2, TerrainChunk> m_TerrainChunks;
+        std::unordered_map<glm::ivec2, std::unique_ptr<TerrainChunk>> m_TerrainChunks;
         std::vector<glm::ivec2> m_ActiveTerrainChunks;
 
         std::vector<PointLight> m_Lights;
