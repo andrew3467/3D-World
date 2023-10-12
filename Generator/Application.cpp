@@ -12,10 +12,7 @@
 
 
 #include <yaml-cpp/yaml.h>
-
-
-
-
+#include <thread>
 
 
 namespace WorldGenerator {
@@ -227,11 +224,11 @@ namespace WorldGenerator {
                 ImGui::Indent();
                 updateMesh |= ImGui::SliderFloat2("Noise Scale", &m_TerrainConfig.noiseScale.x, 0, 1);
                 updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
-                updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 8);
-                updateMesh |= ImGui::SliderFloat("Frequency", &m_TerrainConfig.frequency, 0.0f, 4.0f);
-                updateMesh |= ImGui::SliderFloat("Amplitude", &m_TerrainConfig.amplitude, 1.0f, 10.0f);
-                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
-                updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 10);
+                //updateMesh |= ImGui::SliderFloat("Frequency", &m_TerrainConfig.frequency, 0.0f, 4.0f);
+                //updateMesh |= ImGui::SliderFloat("Amplitude", &m_TerrainConfig.amplitude, 1.0f, 10.0f);
+                //updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
+                //updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
             }
 
 
@@ -284,8 +281,10 @@ namespace WorldGenerator {
 
 
         if(updateMesh){
-            for(auto& c : m_TerrainChunks){
-                c.second->updateMesh();
+            for(auto& entry : m_TerrainChunks){
+                auto& chunk = entry.second;
+                std::thread thread(&TerrainChunk::updateMesh, chunk.get());
+                //sssdthread.join();
             }
         }
 
