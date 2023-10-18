@@ -283,8 +283,9 @@ namespace WorldGenerator {
         if(updateMesh){
             for(auto& entry : m_TerrainChunks){
                 auto& chunk = entry.second;
-                std::thread thread(&TerrainChunk::updateMesh, chunk.get());
+                //std::thread thread(&TerrainChunk::updateMesh, chunk.get());
                 //sssdthread.join();
+                chunk->updateMesh();
             }
         }
 

@@ -256,9 +256,8 @@ void TerrainChunk::createMarchingCubesMesh3D() {
 }
 
 void TerrainChunk::updateMesh() {
-    std::thread thread(&TerrainChunk::createHeightMapMesh, this);
-    thread.join();
-    return;
+    //std::thread thread(&TerrainChunk::createHeightMapMesh, this);
+    //return;
 
     switch (m_Config->genType) {
         case HeightMap:

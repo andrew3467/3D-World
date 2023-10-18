@@ -1,8 +1,8 @@
 Terrain Settings:
   Seed: 32450
-  Size: 16
+  Size: 4
   Height: 2
-  Resolution: 1
+  Resolution: 0
   ISO Level: 0.5
   Color:
     - 0.329400003
@@ -15,10 +15,28 @@ Noise Settings:
     - 0
     - 0
   Noise Scale:
-    - 1
-    - 1
+    - 1.39999998
+    - 1.39999998
   Frequency: 1
   Amplitude: 1
   Lacunarity: 1
   Persistence: 1
   Octaves: 1
+Light Settings:
+  Directional Light:
+    Direction:
+      - -0.200000003
+      - -1
+      - -0.300000012
+    Ambient:
+      - 1
+      - 1
+      - 1
+    Diffuse:
+      - 0.5
+      - 0.5
+      - 0.5
+    Specular:
+      - 0.25
+      - 0.25
+      - 0.25
