@@ -53,6 +53,8 @@ private:
     int indexFrom3D(int x, int y, int z);
     int indexFrom3D(glm::ivec3 v);
 
+    void createMesh();
+
 public:
     void updateMesh();
     void draw();

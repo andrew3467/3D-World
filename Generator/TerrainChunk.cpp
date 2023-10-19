@@ -88,31 +88,6 @@ void TerrainChunk::createHeightMapMesh() {
         }
     }
 
-    //Loop over each triangle, calculating normals
-    //For each face calculate cross product
-    //Add each result to normal of each vertex in face
-    //Finalize by normalizing normals
-    for(int i = 0; i < indices.size(); i+=3){
-        glm::vec3 v0 = vertices[indices[i]].Position;
-        glm::vec3 v1 = vertices[indices[i+1]].Position;
-        glm::vec3 v2 = vertices[indices[i+2]].Position;
-
-        glm::vec3 e0 = v0 - v1;
-        glm::vec3 e1 = v0 - v2;
-
-        glm::vec3 e0crosse1 = glm::cross(e0, e1);
-
-        vertices[indices[i]].Normal += e0crosse1;
-        vertices[indices[i+1]].Normal += e0crosse1;
-        vertices[indices[i+2]].Normal += e0crosse1;
-    }
-
-    //Normalize Normals
-    for(auto& v : vertices){
-        v.Normal = glm::normalize(v.Normal);
-    }
-
-
     m_Mesh->updateMeshData(vertices, indices);
 }
 void TerrainChunk::createMarchingCubesMesh3D() {
@@ -230,35 +205,11 @@ void TerrainChunk::createMarchingCubesMesh3D() {
         }
     }
 
-    //Update Normals
-    for (int i = 0; i < vertices.size(); i += 3) {
-        glm::vec3 v0 = vertices[i].Position;
-        glm::vec3 v1 = vertices[i + 1].Position;
-        glm::vec3 v2 = vertices[i + 2].Position;
-
-        glm::vec3 e0 = v0 - v1;
-        glm::vec3 e1 = v0 - v2;
-
-        glm::vec3 e0crosse1 = glm::cross(e0, e1);
-
-        vertices[i].Normal += e0crosse1;
-        vertices[i + 1].Normal += e0crosse1;
-        vertices[i + 2].Normal += e0crosse1;
-    }
-
-    //Normalize Normals
-    for (auto &v: vertices) {
-        v.Normal = glm::normalize(v.Normal);
-    }
-
     if (!vertices.empty())
         m_Mesh->updateMeshData(vertices);
 }
 
-void TerrainChunk::updateMesh() {
-    //std::thread thread(&TerrainChunk::createHeightMapMesh, this);
-    //return;
-
+void TerrainChunk::createMesh(){
     switch (m_Config->genType) {
         case HeightMap:
             createHeightMapMesh();
@@ -267,4 +218,8 @@ void TerrainChunk::updateMesh() {
             createMarchingCubesMesh3D();
             break;
     }
+}
+
+void TerrainChunk::updateMesh() {
+    createMesh();
 }

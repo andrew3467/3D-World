@@ -34,17 +34,20 @@ namespace WorldGenerator {
         void drawLights();
 
         void updateActiveChunks();
+        void createNewChunk(glm::ivec2 chunkCoord);
         void updateFPS();
 
         void processInput(GLFWwindow* window);
     public:
 
-
         Camera* GetCamera() {return m_Camera.get();}
+
     private:
         float deltaTime = 0.0f;
         float lastFrame = 0.0f;
         int frameCount=0;
+
+        glm::vec3 m_PrevViewerPos;
 
         std::unique_ptr<Camera> m_Camera;
 
@@ -52,6 +55,7 @@ namespace WorldGenerator {
         TerrainConfig m_TerrainConfig;
 
         int m_ViewDistance = 4;
+        glm::ivec2 m_TestTerrainSize = {1,1};
 
         std::unordered_map<glm::ivec2, std::unique_ptr<TerrainChunk>> m_TerrainChunks;
         std::vector<glm::ivec2> m_ActiveTerrainChunks;

@@ -54,7 +54,7 @@ namespace WorldGenerator {
         ImGui::StyleColorsDark();
 
         const char* glsl_version = "#version 460";
-        ImGui_ImplGlfw_InitForOpenGL(m_Window->getWindow(), true);
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->getGLFWWindow(), true);
         ImGui_ImplOpenGL3_Init(glsl_version);
 
         m_Camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 4.0f), 4.0f);
@@ -71,9 +71,16 @@ namespace WorldGenerator {
     }
 
     void Application::onTick() {
-        processInput(m_Window->getWindow());
+        processInput(m_Window->getGLFWWindow());
 
-        updateActiveChunks();
+        //Only call if viewer moves
+        if(m_Camera->position() != m_PrevViewerPos){
+            updateActiveChunks();
+
+
+            m_PrevViewerPos = m_Camera->position();
+        }
+
 
         m_Window->tick();
 
@@ -123,11 +130,17 @@ namespace WorldGenerator {
 
     void Application::updateActiveChunks() {
         if(!infiniteTerrain) {
-            glm::ivec2 chunkCoord(0,0);
-            if(m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()){
-                m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
-            }
+            for(int z = 0; z < m_TestTerrainSize.y; z++){
+                for(int x = 0; x < m_TestTerrainSize.x; x++){
+                    glm::ivec2 chunkCoord(x,z);
 
+                    if(m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()){
+                        createNewChunk(chunkCoord);
+                    }
+
+                    m_ActiveTerrainChunks.push_back(chunkCoord);
+                }
+            }
             return;
         }
 
@@ -135,18 +148,23 @@ namespace WorldGenerator {
         glm::ivec2 viewerChunkCoord = {viewerPos.x / m_TerrainConfig.size,
                                       viewerPos.z / m_TerrainConfig.size};
 
+
         m_ActiveTerrainChunks.clear();
         for(int z = -m_ViewDistance; z < m_ViewDistance; z++){
-            for(int x = -m_ViewDistance; x < m_ViewDistance; x++){
+            for(int x = -m_ViewDistance; x < m_ViewDistance; x++) {
                 glm::ivec2 chunkCoord = glm::ivec2(x, z) + viewerChunkCoord;
 
-                if(m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()){
-                    m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
+                if (m_TerrainChunks.find(chunkCoord) == m_TerrainChunks.end()) {
+                    createNewChunk(chunkCoord);
                 }
 
                 m_ActiveTerrainChunks.push_back(chunkCoord);
             }
         }
+    }
+
+    void Application::createNewChunk(glm::ivec2 chunkCoord) {
+        m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
     }
 
     void Application::updateFPS() {
@@ -162,7 +180,7 @@ namespace WorldGenerator {
             std::stringstream ss;
             ss << "3D World" << " [" << fps << " FPS]";
 
-            glfwSetWindowTitle(m_Window->getWindow(), ss.str().c_str());
+            glfwSetWindowTitle(m_Window->getGLFWWindow(), ss.str().c_str());
 
             frameCount = 0;
             lastFrame = currentTime;
@@ -201,6 +219,12 @@ namespace WorldGenerator {
 
         ImGui::Checkbox("Infinite Terrain", &infiniteTerrain);
         ImGui::SliderInt("View Distance", &m_ViewDistance, 1, 8);
+
+        if(!infiniteTerrain){
+            if(ImGui::SliderInt2("Test Size", &m_TestTerrainSize.x, 1, 4)){
+                updateActiveChunks();
+            }
+        }
 
         bool updateMesh = false;
         if(ImGui::CollapsingHeader("Terrain Config")) {
@@ -283,9 +307,9 @@ namespace WorldGenerator {
         if(updateMesh){
             for(auto& entry : m_TerrainChunks){
                 auto& chunk = entry.second;
-                //std::thread thread(&TerrainChunk::updateMesh, chunk.get());
-                //sssdthread.join();
-                chunk->updateMesh();
+                std::thread thread(&TerrainChunk::updateMesh, chunk.get());
+                thread.detach();
+                //chunk->updateMesh();
             }
         }
 
@@ -295,8 +319,13 @@ namespace WorldGenerator {
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
+
     void Application::saveConfig() {
         YAML::Node config;
+
+        config["Viewer Settings"]["View Distance"] = m_ViewDistance;
+        config["Viewer Settings"]["Testing Size"][0] = m_TestTerrainSize.x;
+        config["Viewer Settings"]["Testing Size"][1] = m_TestTerrainSize.y;
 
 
         config["Terrain Settings"]["Seed"] = m_TerrainConfig.seed;
@@ -349,6 +378,10 @@ namespace WorldGenerator {
     }
     void Application::loadConfig() {
         YAML::Node config = YAML::LoadFile("config.yaml");
+
+        m_ViewDistance = config["Viewer Settings"]["View Distance"].as<int>();
+        m_TestTerrainSize.x = config["Viewer Settings"]["Testing Size"][0].as<int>();
+        m_TestTerrainSize.y = config["Viewer Settings"]["Testing Size"][1].as<int>();
 
 
         m_TerrainConfig.seed = config["Terrain Settings"]["Seed"].as<int>();
@@ -441,6 +474,7 @@ namespace WorldGenerator {
 
         }
     }
+
     void Application::onScroll(GLFWwindow* window, double xoffset, double yoffset) {
         Application* app = (Application*) glfwGetWindowUserPointer(window);
 

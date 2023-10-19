@@ -60,6 +60,8 @@ void Mesh::updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned in
     m_Vertices = vertices;
     m_Indices =  indices;
 
+    recalculateNormals();
+
     indexedBuffer = true;
     setUpBuffers();
 }
@@ -67,6 +69,8 @@ void Mesh::updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned in
 void Mesh::updateMeshData(std::vector<Vertex> &vertices) {
     m_Vertices.clear();
     m_Vertices = vertices;
+
+    recalculateNormals();
 
     indexedBuffer = false;
     setUpBuffers();
@@ -78,5 +82,48 @@ void Mesh::draw(Shader &shader) {
     }
     else{
         Renderer::Renderer::Draw(VAO, m_Vertices.size(), shader, false);
+    }
+}
+
+void Mesh::recalculateNormals() {
+    //Loop over each triangle, calculating normals
+    //For each face calculate cross product
+    //Add each result to normal of each vertex in face
+    //Finalize by normalizing normals
+    if(indexedBuffer){
+        for (int i = 0; i < m_Indices.size(); i += 3) {
+            glm::vec3 v0 = m_Vertices[m_Indices[i]].Position;
+            glm::vec3 v1 = m_Vertices[m_Indices[i + 1]].Position;
+            glm::vec3 v2 = m_Vertices[m_Indices[i + 2]].Position;
+
+            glm::vec3 e0 = v0 - v1;
+            glm::vec3 e1 = v0 - v2;
+
+            glm::vec3 e0crosse1 = glm::cross(e0, e1);
+
+            m_Vertices[m_Indices[i]].Normal += e0crosse1;
+            m_Vertices[m_Indices[i + 1]].Normal += e0crosse1;
+            m_Vertices[m_Indices[i + 2]].Normal += e0crosse1;
+        }
+    }else{
+        for(int i = 0; i < m_Vertices.size(); i+=3){
+            glm::vec3 v0 = m_Vertices[i].Position;
+            glm::vec3 v1 = m_Vertices[i + 1].Position;
+            glm::vec3 v2 = m_Vertices[i + 2].Position;
+
+            glm::vec3 e0 = v0 - v1;
+            glm::vec3 e1 = v0 - v2;
+
+            glm::vec3 e0crosse1 = glm::cross(e0, e1);
+
+            m_Vertices[i].Normal += e0crosse1;
+            m_Vertices[i + 1].Normal += e0crosse1;
+            m_Vertices[i + 2].Normal += e0crosse1;
+        }
+    }
+
+    //Normalize Normals
+    for(auto& v : m_Vertices){
+        v.Normal = glm::normalize(v.Normal);
     }
 }

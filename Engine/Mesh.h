@@ -42,6 +42,8 @@ public:
     void updateMeshData(std::vector<Vertex> &vertices, std::vector<unsigned int> &indices);
     void updateMeshData(std::vector<Vertex> &vertices);
 
+    void recalculateNormals();
+
 private:
     bool indexedBuffer = true;
 
