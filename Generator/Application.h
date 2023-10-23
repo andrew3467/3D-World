@@ -53,6 +53,7 @@ namespace WorldGenerator {
 
         std::unique_ptr<Window> m_Window;
         TerrainConfig m_TerrainConfig;
+        ErosionConfig m_ErosionConfig;
 
         int m_ViewDistance = 4;
         glm::ivec2 m_TestTerrainSize = {1,1};

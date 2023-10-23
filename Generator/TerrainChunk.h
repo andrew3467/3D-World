@@ -25,16 +25,17 @@ struct TerrainConfig {
     int resolution = 0;
     glm::vec3 noiseOffset = {0, 0, 0};
     glm::vec2 noiseScale = {1.4f, 1.4f};
-    float heightMultiplier = 1;
     int octaves = 1;
-    float frequency = 1.0f;
-    float amplitude = 1.0f;
     float lacunarity = 1.0f;
     float persistence = 1.0f;
 
     //Marching Cubes
     int height = 2;
     float isoLevel = 0.5f;;
+};
+
+struct ErosionConfig{
+    int numIterations = 10;
 };
 
 

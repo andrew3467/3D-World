@@ -5,28 +5,25 @@ Viewer Settings:
     - 1
 Terrain Settings:
   Seed: 32450
-  Size: 4
+  Size: 64
   Height: 2
-  Resolution: 0
+  Resolution: 4
   ISO Level: 0.5
   Color:
     - 0.329400003
     - 0.733299971
     - 0.192100003
-  Height Multiplier: 1
 Noise Settings:
   Offsets:
-    - 0
+    - 3.10299993
     - 0
     - 0
   Noise Scale:
+    - 1
     - 1.39999998
-    - 1.39999998
-  Frequency: 1
-  Amplitude: 1
-  Lacunarity: 1
-  Persistence: 1
-  Octaves: 1
+  Lacunarity: 2.59200001
+  Persistence: 1.352
+  Octaves: 8
 Light Settings:
   Directional Light:
     Direction:
@@ -45,3 +42,5 @@ Light Settings:
       - 0.25
       - 0.25
       - 0.25
+Erosion Settings:
+  Num Iterations: 10

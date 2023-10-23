@@ -226,14 +226,18 @@ namespace WorldGenerator {
             }
         }
 
+        //Save to file
+        if(ImGui::Button("Save Config")){
+            saveConfig();
+        }
+
+        if(ImGui::Button("Run Erosion Sim")){
+
+        }
+
         bool updateMesh = false;
         if(ImGui::CollapsingHeader("Terrain Config")) {
             ImGui::Indent();
-
-            //Save to file
-            if(ImGui::Button("Save Config")){
-                saveConfig();
-            }
 
             int genType = m_TerrainConfig.genType;
             const char* genTypeNames[3] = {"Height Map", "Marching Cubes 3D"};
@@ -249,17 +253,13 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat2("Noise Scale", &m_TerrainConfig.noiseScale.x, 0, 1);
                 updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
                 updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 10);
-                //updateMesh |= ImGui::SliderFloat("Frequency", &m_TerrainConfig.frequency, 0.0f, 4.0f);
-                //updateMesh |= ImGui::SliderFloat("Amplitude", &m_TerrainConfig.amplitude, 1.0f, 10.0f);
-                //updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
-                //updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
             }
 
 
             if(m_TerrainConfig.genType == HeightMap && ImGui::CollapsingHeader("Height Map Config")) {
                 ImGui::Indent();
-
-                updateMesh |= ImGui::SliderFloat("Height Multiplier", &m_TerrainConfig.heightMultiplier, 0.1f, 8.0f);
             }
 
             if(m_TerrainConfig.genType == MarchingCube3D && ImGui::CollapsingHeader("Marching Cubes Config")) {
@@ -272,6 +272,9 @@ namespace WorldGenerator {
             ImGui::Unindent();
 
             updateMesh |= ImGui::ColorPicker3("Ambient", &m_TerrainConfig.color.x);
+        }
+        if(ImGui::CollapsingHeader("Erosion Config")){
+            ImGui::InputInt("Num Iterations", &m_ErosionConfig.numIterations);
         }
         if(ImGui::CollapsingHeader("Lighting Config")) {
             ImGui::Indent();
@@ -307,9 +310,7 @@ namespace WorldGenerator {
         if(updateMesh){
             for(auto& entry : m_TerrainChunks){
                 auto& chunk = entry.second;
-                std::thread thread(&TerrainChunk::updateMesh, chunk.get());
-                thread.detach();
-                //chunk->updateMesh();
+                chunk->updateMesh();
             }
         }
 
@@ -345,10 +346,6 @@ namespace WorldGenerator {
         config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.x);
         config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.y);
 
-        config["Terrain Settings"]["Height Multiplier"] = m_TerrainConfig.heightMultiplier;
-
-        config["Noise Settings"]["Frequency"] = m_TerrainConfig.frequency;
-        config["Noise Settings"]["Amplitude"] = m_TerrainConfig.amplitude;
         config["Noise Settings"]["Lacunarity"] = m_TerrainConfig.lacunarity;
         config["Noise Settings"]["Persistence"] = m_TerrainConfig.persistence;
 
@@ -371,6 +368,9 @@ namespace WorldGenerator {
         config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.x);
         config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.y);
         config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.z);
+
+
+        config["Erosion Settings"]["Num Iterations"] = m_ErosionConfig.numIterations;
 
 
         std::ofstream fout("config.yaml");
@@ -403,10 +403,6 @@ namespace WorldGenerator {
         m_TerrainConfig.noiseScale.x = config["Noise Settings"]["Noise Scale"][0].as<float>();
         m_TerrainConfig.noiseScale.y = config["Noise Settings"]["Noise Scale"][1].as<float>();
 
-        m_TerrainConfig.heightMultiplier = config["Terrain Settings"]["Height Multiplier"].as<float>();
-
-        m_TerrainConfig.frequency = config["Noise Settings"]["Frequency"].as<float>();
-        m_TerrainConfig.amplitude = config["Noise Settings"]["Amplitude"].as<float>();
         m_TerrainConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();
         m_TerrainConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
 
@@ -428,6 +424,9 @@ namespace WorldGenerator {
         dirLight.Specular.x = config["Light Settings"]["Directional Light"]["Specular"][0].as<float>();
         dirLight.Specular.y = config["Light Settings"]["Directional Light"]["Specular"][1].as<float>();
         dirLight.Specular.z = config["Light Settings"]["Directional Light"]["Specular"][2].as<float>();
+
+
+        m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
     }
 
 

@@ -21,6 +21,8 @@ set(IMGUI_SRC
 set(SIMPLEX_SRC
     ${CMAKE_SOURCE_DIR}/external/Simplex/SimplexNoise.h
     ${CMAKE_SOURCE_DIR}/external/Simplex/SimplexNoise.cpp
+        HeightMapGenerator.cpp
+        HeightMapGenerator.h
 )
 
 include_directories(${CMAKE_SOURCE_DIR}/external/ImGui)

@@ -6,6 +6,7 @@
 #include "TerrainChunk.h"
 #include "MarchingTables.h"
 #include "../external/Simplex/SimplexNoise.h"
+#include "HeightMapGenerator.h"
 
 
 TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config) : m_Config(config) {
@@ -41,38 +42,27 @@ int TerrainChunk::indexFrom3D(glm::ivec3 v) {
 void TerrainChunk::createHeightMapMesh() {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
+    std::vector<float> map =
+            HeightMapGenerator::GenerateHeightMap(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_Config);;
+
 
     int resolution = std::pow(2, m_Config->resolution);
 
     //Vertices per line: size + (res - 1) * (size - 1)
     m_Size = m_Config->size + ((resolution - 1) * (m_Config->size - 1));
 
-    SimplexNoise simplexNoise(
-            m_Config->frequency,
-            m_Config->amplitude,
-            m_Config->lacunarity,
-            m_Config->persistence
-    );
-
-    int vertIndex = 0;
-    for(int z = 0; z < m_Size; z++){
-        for(int x = 0; x < m_Size; x++) {
+    //Create Vertices
+    for(int z = 0, vertIndex = 0; z < m_Size; z++) {
+        for (int x = 0; x < m_Size; x++, vertIndex++) {
             float xPos = x / (float) (resolution);
             float zPos = z / (float) (resolution);
 
-            float height = simplexNoise.fractal(m_Config->octaves,
-                                        (xPos + m_Config->noiseOffset.x + m_Transform.Position.x) * m_Config->noiseScale.x,
-                                           (zPos + m_Config->noiseOffset.y + m_Transform.Position.z) * m_Config->noiseScale.x);
-
-            //Normalize between 0 and 1
-            height = (1 + height) / 2.0f;
-            height *= m_Config->heightMultiplier;
-
-
-            vertices.emplace_back(glm::vec3(xPos, height, zPos),
-                                  glm::vec3(0.0f, 0.0f, 0.0f),
-                                  glm::vec2((float)x / m_Size, (float)z / m_Size),
-                                  m_Config->color);
+            vertices.emplace_back(
+                    glm::vec3(xPos, map[vertIndex], zPos),
+                    glm::vec3(0.0f, 0.0f, 0.0f),
+                    glm::vec2((float)x / m_Size, (float)z / m_Size),
+                    m_Config->color
+                    );
 
             if (x < m_Size - 1 && z < m_Size - 1) {
                 indices.push_back(vertIndex);
@@ -83,8 +73,6 @@ void TerrainChunk::createHeightMapMesh() {
                 indices.push_back(vertIndex + 1);
                 indices.push_back(vertIndex);
             }
-
-            vertIndex++;
         }
     }
 
