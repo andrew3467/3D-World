@@ -11,6 +11,9 @@
 class HeightMapGenerator {
 public:
     static std::vector<float> GenerateHeightMap(glm::vec2 position, TerrainConfig& config);
+
+    //Values in map vector are modified directly
+    static void SimulateErosion(std::vector<float> &map, ErosionConfig& config);
 };
 
 

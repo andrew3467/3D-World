@@ -275,6 +275,7 @@ namespace WorldGenerator {
         }
         if(ImGui::CollapsingHeader("Erosion Config")){
             ImGui::InputInt("Num Iterations", &m_ErosionConfig.numIterations);
+            ImGui::InputInt("Num Droplets", &m_ErosionConfig.numDroplets);
         }
         if(ImGui::CollapsingHeader("Lighting Config")) {
             ImGui::Indent();

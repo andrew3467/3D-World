@@ -62,3 +62,7 @@ std::vector<float> HeightMapGenerator::GenerateHeightMap(glm::vec2 position, Ter
 
     return map;
 }
+
+void HeightMapGenerator::SimulateErosion(std::vector<float> &map, ErosionConfig &config) {
+    
+}

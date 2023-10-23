@@ -36,6 +36,7 @@ struct TerrainConfig {
 
 struct ErosionConfig{
     int numIterations = 10;
+    int numDroplets = 50;
 };
 
 
