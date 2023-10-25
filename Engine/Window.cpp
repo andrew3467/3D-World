@@ -62,3 +62,7 @@ void Window::setKeyCallback(GLFWkeyfun callback) {
 void Window::setScrollCallback(GLFWscrollfun callback) {
     glfwSetScrollCallback(m_Window, callback);
 }
+
+void Window::setResizeCallback(GLFWwindowsizefun callback) {
+    glfwSetWindowSizeCallback(m_Window, callback);
+}

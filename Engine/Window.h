@@ -51,6 +51,7 @@ public:
     void setUserPointer(void* ptr);
     void setKeyCallback(GLFWkeyfun callback);
     void setScrollCallback(GLFWscrollfun callback);
+    void setResizeCallback(GLFWwindowsizefun callback);
 };
 
 

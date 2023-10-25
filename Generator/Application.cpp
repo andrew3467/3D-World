@@ -38,6 +38,7 @@ namespace WorldGenerator {
 
         m_Window->setKeyCallback(onKeyPressed);
         m_Window->setScrollCallback(onScroll);
+        m_Window->setResizeCallback(onWindowResize);
 
         glEnable(GL_DEPTH_TEST);
 
@@ -486,6 +487,11 @@ namespace WorldGenerator {
         if(yoffset < 0){
             app->GetCamera()->increaseMoveSpeed(-1.0f);
         }
+    }
+
+    void Application::onWindowResize(GLFWwindow *window, int width, int height) {
+        glViewport(0, 0, width, height);
+
     }
 
 }

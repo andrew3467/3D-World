@@ -16,6 +16,12 @@ std::vector<float> HeightMapGenerator::GenerateHeightMap(glm::vec2 position, Ter
     //Vertices per line: size + (res - 1) * (size - 1)
     int size = config.size + ((resolution - 1) * (config.size - 1));
 
+    srand(config.seed);
+    std::vector<glm::vec2> offsets;
+    for(int i = 0; i < config.octaves; i++) {
+        offsets.emplace_back(rand(), rand());
+    }
+
 
     int vertIndex = 0;
     for(int z = 0; z < size; z++) {
@@ -26,12 +32,8 @@ std::vector<float> HeightMapGenerator::GenerateHeightMap(glm::vec2 position, Ter
             float noiseValue = 0;
             float scale = 1;
             float weight = 1;
-
-            glm::vec2 offset = glm::vec2(config.noiseOffset.x, config.noiseOffset.z) + position;
-
             for (int i = 0; i < config.octaves; i++) {
-                glm::vec2 p = (offset * scale) + glm::vec2(xPos / config.size, zPos / config.size);
-
+                glm::vec2 p = offsets[i] + position + glm::vec2(xPos / size, zPos / size) * scale;
                 noiseValue += SimplexNoise::noise(p.x, p.y) * weight;
 
                 weight *= config.persistence;
@@ -57,6 +59,13 @@ std::vector<float> HeightMapGenerator::GenerateHeightMap(glm::vec2 position, Ter
             }
 
             vertIndex++;
+        }
+    }
+
+    //Normalize Mapping
+    if(maxValue != minValue){
+        for(int i = 0; i < map.size(); i++){
+            map[i] = (map[i] + 1) / 2.0f;
         }
     }
 
