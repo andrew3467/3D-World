@@ -7,13 +7,14 @@
 #include "MarchingTables.h"
 #include "../external/Simplex/SimplexNoise.h"
 #include "HeightMapGenerator.h"
+#include "ErosionSimulator.h"
 
 
-TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config) : m_Config(config) {
+TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config, ErosionConfig* erosionConfig) : m_TerrainConfig(config), m_ErosionConfig(erosionConfig) {
     m_Mesh = std::make_unique<Mesh>();
     m_MeshRenderer = std::make_unique<MeshRenderer>(m_Mesh.get());
 
-    m_Transform.Position = pos * glm::vec3(m_Config->size - 1, 0, m_Config->size - 1);
+    m_Transform.Position = pos * glm::vec3(m_TerrainConfig->size - 1, 0, m_TerrainConfig->size - 1);
 
     updateMesh();
 }
@@ -28,7 +29,7 @@ void TerrainChunk::draw(){
 
 glm::vec3 TerrainChunk::interp(glm::vec3 edgeVertex1, float valueAtVertex1, glm::vec3 edgeVertex2, float valueAtVertex2)
 {
-    return (edgeVertex1 + (m_Config->isoLevel - valueAtVertex1) * (edgeVertex2 - edgeVertex1)  / (valueAtVertex2 - valueAtVertex1));
+    return (edgeVertex1 + (m_TerrainConfig->isoLevel - valueAtVertex1) * (edgeVertex2 - edgeVertex1) / (valueAtVertex2 - valueAtVertex1));
 }
 
 int TerrainChunk::indexFrom3D(int x, int y, int z){
@@ -39,17 +40,21 @@ int TerrainChunk::indexFrom3D(glm::ivec3 v) {
 }
 
 
-void TerrainChunk::createHeightMapMesh() {
+void TerrainChunk::createHeightMapMesh(bool erosionSim) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<float> map =
-            HeightMapGenerator::GenerateHeightMap(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_Config);;
+    std::vector<std::vector<float>> map =
+            HeightMapGenerator::GenerateHeightMap(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_TerrainConfig);
+
+    if(erosionSim){
+        ErosionSimulator::SimulateErosion2D(map, *m_ErosionConfig, m_TerrainConfig->seed);
+    }
 
 
-    int resolution = std::pow(2, m_Config->resolution);
+    int resolution = std::pow(2, m_TerrainConfig->resolution);
 
     //Vertices per line: size + (res - 1) * (size - 1)
-    m_Size = m_Config->size + ((resolution - 1) * (m_Config->size - 1));
+    m_Size = m_TerrainConfig->size + ((resolution - 1) * (m_TerrainConfig->size - 1));
 
     //Create Vertices
     for(int z = 0, vertIndex = 0; z < m_Size; z++) {
@@ -58,10 +63,10 @@ void TerrainChunk::createHeightMapMesh() {
             float zPos = z / (float) (resolution);
 
             vertices.emplace_back(
-                    glm::vec3(xPos, map[vertIndex], zPos),
+                    glm::vec3(xPos, map[x][z], zPos),
                     glm::vec3(0.0f, 0.0f, 0.0f),
                     glm::vec2((float)x / m_Size, (float)z / m_Size),
-                    m_Config->color
+                    m_TerrainConfig->color
                     );
 
             if (x < m_Size - 1 && z < m_Size - 1) {
@@ -81,9 +86,9 @@ void TerrainChunk::createHeightMapMesh() {
 void TerrainChunk::createMarchingCubesMesh3D() {
     std::vector<Vertex> vertices;
 
-    int resolution = std::pow(2, m_Config->resolution);
-    m_Size = m_Config->size + ((resolution - 1) * (m_Config->size - 1));
-    m_Height = m_Config->height + ((resolution - 1) * (m_Config->height - 1));
+    int resolution = std::pow(2, m_TerrainConfig->resolution);
+    m_Size = m_TerrainConfig->size + ((resolution - 1) * (m_TerrainConfig->size - 1));
+    m_Height = m_TerrainConfig->height + ((resolution - 1) * (m_TerrainConfig->height - 1));
 
     glm::vec3 scaledDim(1.0f / (float) resolution);
 
@@ -103,10 +108,10 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                 float noiseValue = 0.0f;
                 float frequency = 1.01f;
                 float amplitude = 1.0f;
-                for(int i = 0; i < m_Config->octaves; i++){
-                    noiseValue += simplexNoise.noise((xPos + m_Config->noiseOffset.x + m_Transform.Position.x) * m_Config->noiseScale.x * frequency,
-                                                            (yPos + m_Config->noiseOffset.y + m_Transform.Position.y) * m_Config->noiseScale.y * frequency,
-                                                            (zPos + m_Config->noiseOffset.z + m_Transform.Position.z) * m_Config->noiseScale.x * frequency) * amplitude;
+                for(int i = 0; i < m_TerrainConfig->octaves; i++){
+                    noiseValue += simplexNoise.noise((xPos + m_TerrainConfig->noiseOffset.x + m_Transform.Position.x) * m_TerrainConfig->noiseScale.x * frequency,
+                                                     (yPos + m_TerrainConfig->noiseOffset.y + m_Transform.Position.y) * m_TerrainConfig->noiseScale.y * frequency,
+                                                     (zPos + m_TerrainConfig->noiseOffset.z + m_Transform.Position.z) * m_TerrainConfig->noiseScale.x * frequency) * amplitude;
 
                     frequency *= 2.0f;
                     amplitude *= 0.5f;
@@ -129,15 +134,15 @@ void TerrainChunk::createMarchingCubesMesh3D() {
 
                 //Check if each vertex is within isoLevel to determine indices to use
                 int cubeIndex = 0;
-                if (noiseValues[indexFrom3D(x, y, z + 1)] < m_Config->isoLevel) cubeIndex |= 1;
-                if (noiseValues[indexFrom3D(x + 1, y, z + 1)] < m_Config->isoLevel) cubeIndex |= 2;
-                if (noiseValues[indexFrom3D(x + 1, y, z)] < m_Config->isoLevel) cubeIndex |= 4;
-                if (noiseValues[indexFrom3D(x, y, z)] < m_Config->isoLevel) cubeIndex |= 8;
+                if (noiseValues[indexFrom3D(x, y, z + 1)] < m_TerrainConfig->isoLevel) cubeIndex |= 1;
+                if (noiseValues[indexFrom3D(x + 1, y, z + 1)] < m_TerrainConfig->isoLevel) cubeIndex |= 2;
+                if (noiseValues[indexFrom3D(x + 1, y, z)] < m_TerrainConfig->isoLevel) cubeIndex |= 4;
+                if (noiseValues[indexFrom3D(x, y, z)] < m_TerrainConfig->isoLevel) cubeIndex |= 8;
 
-                if (noiseValues[indexFrom3D(x, y + 1, z + 1)] < m_Config->isoLevel) cubeIndex |= 16;
-                if (noiseValues[indexFrom3D(x + 1, y + 1, z + 1)] < m_Config->isoLevel) cubeIndex |= 32;
-                if (noiseValues[indexFrom3D(x + 1, y + 1, z)] < m_Config->isoLevel) cubeIndex |= 64;
-                if (noiseValues[indexFrom3D(x, y + 1, z)] < m_Config->isoLevel) cubeIndex |= 128;
+                if (noiseValues[indexFrom3D(x, y + 1, z + 1)] < m_TerrainConfig->isoLevel) cubeIndex |= 16;
+                if (noiseValues[indexFrom3D(x + 1, y + 1, z + 1)] < m_TerrainConfig->isoLevel) cubeIndex |= 32;
+                if (noiseValues[indexFrom3D(x + 1, y + 1, z)] < m_TerrainConfig->isoLevel) cubeIndex |= 64;
+                if (noiseValues[indexFrom3D(x, y + 1, z)] < m_TerrainConfig->isoLevel) cubeIndex |= 128;
 
 
                 int *edges = triTable[cubeIndex];
@@ -166,7 +171,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_Config->color);
+                                          m_TerrainConfig->color);
 
 
                     pos = interp(cornerOffsets[e10],
@@ -177,7 +182,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_Config->color);
+                                          m_TerrainConfig->color);
 
                     pos = interp(cornerOffsets[e20],
                                  noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e20])],
@@ -187,7 +192,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_Config->color);
+                                          m_TerrainConfig->color);
                 }
             }
         }
@@ -197,10 +202,10 @@ void TerrainChunk::createMarchingCubesMesh3D() {
         m_Mesh->updateMeshData(vertices);
 }
 
-void TerrainChunk::createMesh(){
-    switch (m_Config->genType) {
+void TerrainChunk::createMesh(bool erosionSim){
+    switch (m_TerrainConfig->genType) {
         case HeightMap:
-            createHeightMapMesh();
+            createHeightMapMesh(erosionSim);
             break;
         case MarchingCube3D:
             createMarchingCubesMesh3D();
@@ -208,6 +213,6 @@ void TerrainChunk::createMesh(){
     }
 }
 
-void TerrainChunk::updateMesh() {
-    createMesh();
+void TerrainChunk::updateMesh(bool erosionSim) {
+    createMesh(erosionSim);
 }

@@ -165,7 +165,7 @@ namespace WorldGenerator {
     }
 
     void Application::createNewChunk(glm::ivec2 chunkCoord) {
-        m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig);
+        m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig, &m_ErosionConfig);
     }
 
     void Application::updateFPS() {
@@ -232,11 +232,13 @@ namespace WorldGenerator {
             saveConfig();
         }
 
+        bool updateMesh = false;
+        bool erosionSim = false;
         if(ImGui::Button("Run Erosion Sim")){
-
+            updateMesh = true;
+            erosionSim = true;
         }
 
-        bool updateMesh = false;
         if(ImGui::CollapsingHeader("Terrain Config")) {
             ImGui::Indent();
 
@@ -277,7 +279,14 @@ namespace WorldGenerator {
         if(ImGui::CollapsingHeader("Erosion Config")){
             ImGui::InputInt("Num Iterations", &m_ErosionConfig.numIterations);
             ImGui::InputInt("Num Droplets", &m_ErosionConfig.numDroplets);
+
+            ImGui::SliderFloat("Iteration Scale", &m_ErosionConfig.iterationScale, 0.001f, 10.0f);
+            ImGui::SliderFloat("Deposition Rate", &m_ErosionConfig.depositionRate, 0.1f, 10.0f);
+            ImGui::SliderFloat("Erosion Rate", &m_ErosionConfig.erosionRate, 0.1f, 10.0f);
+            ImGui::SliderFloat("Friction", &m_ErosionConfig.friction, 0.1f, 10.0f);
+
         }
+
         if(ImGui::CollapsingHeader("Lighting Config")) {
             ImGui::Indent();
 
@@ -312,7 +321,7 @@ namespace WorldGenerator {
         if(updateMesh){
             for(auto& entry : m_TerrainChunks){
                 auto& chunk = entry.second;
-                chunk->updateMesh();
+                chunk->updateMesh(erosionSim);
             }
         }
 
@@ -373,6 +382,11 @@ namespace WorldGenerator {
 
 
         config["Erosion Settings"]["Num Iterations"] = m_ErosionConfig.numIterations;
+        config["Erosion Settings"]["Num Droplets"] = m_ErosionConfig.numDroplets;
+        config["Erosion Settings"]["Iteration Scale"] = m_ErosionConfig.iterationScale;
+        config["Erosion Settings"]["Deposition Rate"] = m_ErosionConfig.depositionRate;
+        config["Erosion Settings"]["Erosion Rate"] = m_ErosionConfig.erosionRate;
+        config["Erosion Settings"]["Friction"] = m_ErosionConfig.friction;
 
 
         std::ofstream fout("config.yaml");
@@ -429,6 +443,11 @@ namespace WorldGenerator {
 
 
         m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
+        m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
+        m_ErosionConfig.iterationScale = config["Erosion Settings"]["Iteration Scale"].as<float>();
+        m_ErosionConfig.depositionRate = config["Erosion Settings"]["Deposition Rate"].as<float>();
+        m_ErosionConfig.erosionRate = config["Erosion Settings"]["Erosion Rate"].as<float>();
+        m_ErosionConfig.friction = config["Erosion Settings"]["Friction"].as<float>();
     }
 
 

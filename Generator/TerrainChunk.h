@@ -37,32 +37,39 @@ struct TerrainConfig {
 struct ErosionConfig{
     int numIterations = 10;
     int numDroplets = 50;
+
+    float iterationScale = 1.0f;
+
+    float depositionRate = 0.1f;
+    float erosionRate = 0.2f;
+    float friction = 0.25f;
 };
 
 
 class TerrainChunk {
 public:
-    TerrainChunk(glm::vec3 pos, TerrainConfig* config);
+    TerrainChunk(glm::vec3 pos, TerrainConfig* terrainConfig, ErosionConfig* erosionConfig);
     ~TerrainChunk();
 
 
 private:
     glm::vec3 interp(glm::vec3 edgeVertex1, float valueAtVertex1, glm::vec3 edgeVertex2, float valueAtVertex2);
 
-    void createHeightMapMesh();
+    void createHeightMapMesh(bool erosionSim = false);
     void createMarchingCubesMesh3D();
 
     int indexFrom3D(int x, int y, int z);
     int indexFrom3D(glm::ivec3 v);
 
-    void createMesh();
+    void createMesh(bool erosionSim = false);
 
 public:
-    void updateMesh();
+    void updateMesh(bool erosionSim = false);
     void draw();
 
 private:
-    TerrainConfig* m_Config;
+    TerrainConfig* m_TerrainConfig;
+    ErosionConfig* m_ErosionConfig;
     std::unique_ptr<Mesh> m_Mesh;
     std::unique_ptr<MeshRenderer> m_MeshRenderer;
     Transform m_Transform;
