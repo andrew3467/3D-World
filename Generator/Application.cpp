@@ -279,11 +279,17 @@ namespace WorldGenerator {
         if(ImGui::CollapsingHeader("Erosion Config")){
             ImGui::InputInt("Num Iterations", &m_ErosionConfig.numIterations);
             ImGui::InputInt("Num Droplets", &m_ErosionConfig.numDroplets);
+            ImGui::InputInt("Max Steps", &m_ErosionConfig.maxSteps);
 
-            ImGui::SliderFloat("Iteration Scale", &m_ErosionConfig.iterationScale, 0.001f, 10.0f);
-            ImGui::SliderFloat("Deposition Rate", &m_ErosionConfig.depositionRate, 0.1f, 10.0f);
-            ImGui::SliderFloat("Erosion Rate", &m_ErosionConfig.erosionRate, 0.1f, 10.0f);
-            ImGui::SliderFloat("Friction", &m_ErosionConfig.friction, 0.1f, 10.0f);
+            ImGui::SliderFloat("Inertia", &m_ErosionConfig.inertia, 0.0f, 1.0f);
+            ImGui::SliderFloat("Erosion Rate", &m_ErosionConfig.erosionRate, 0.01f, 1.0f);
+            ImGui::SliderFloat("Deposition Rate", &m_ErosionConfig.depositionRate, 0.01f, 1.0f);
+            ImGui::SliderFloat("Evaporation Rate", &m_ErosionConfig.evaporationRate, 0.01f, 1.0f);
+            ImGui::SliderFloat("Min Slope", &m_ErosionConfig.minSlope, 0.01f, 0.95f);
+
+            ImGui::Spacing();
+            ImGui::SliderFloat("Particle Capacity", &m_ErosionConfig.particleCapacity, 0.0f, 2.0f);
+            ImGui::SliderInt("Particle Radius", &m_ErosionConfig.particleRadius, 1, 10);
 
         }
 
@@ -381,12 +387,9 @@ namespace WorldGenerator {
         config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.z);
 
 
+        //TODO: Save erosion settings to file
         config["Erosion Settings"]["Num Iterations"] = m_ErosionConfig.numIterations;
         config["Erosion Settings"]["Num Droplets"] = m_ErosionConfig.numDroplets;
-        config["Erosion Settings"]["Iteration Scale"] = m_ErosionConfig.iterationScale;
-        config["Erosion Settings"]["Deposition Rate"] = m_ErosionConfig.depositionRate;
-        config["Erosion Settings"]["Erosion Rate"] = m_ErosionConfig.erosionRate;
-        config["Erosion Settings"]["Friction"] = m_ErosionConfig.friction;
 
 
         std::ofstream fout("config.yaml");
@@ -442,12 +445,9 @@ namespace WorldGenerator {
         dirLight.Specular.z = config["Light Settings"]["Directional Light"]["Specular"][2].as<float>();
 
 
-        m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
-        m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
-        m_ErosionConfig.iterationScale = config["Erosion Settings"]["Iteration Scale"].as<float>();
-        m_ErosionConfig.depositionRate = config["Erosion Settings"]["Deposition Rate"].as<float>();
-        m_ErosionConfig.erosionRate = config["Erosion Settings"]["Erosion Rate"].as<float>();
-        m_ErosionConfig.friction = config["Erosion Settings"]["Friction"].as<float>();
+        //m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
+        //m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
+        //m_ErosionConfig.inertia = config["Erosion Settings"]["Inertia"].as<float>();
     }
 
 

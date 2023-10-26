@@ -37,12 +37,17 @@ struct TerrainConfig {
 struct ErosionConfig{
     int numIterations = 10;
     int numDroplets = 50;
+    int maxSteps = 100;
 
-    float iterationScale = 1.0f;
+    float depositionRate = 0.25f;
+    float erosionRate = 0.25f;
+    float evaporationRate = 0.25f;
+    float minSlope = 0.05f;
 
-    float depositionRate = 0.1f;
-    float erosionRate = 0.2f;
-    float friction = 0.25f;
+    float inertia = 0.5f;
+
+    float particleCapacity = 1.0f;
+    int particleRadius = 1;
 };
 
 
