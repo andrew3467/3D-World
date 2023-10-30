@@ -43,9 +43,5 @@ Light Settings:
       - 0.25
       - 0.25
 Erosion Settings:
-  Num Iterations: 2000
-  Num Droplets: 50000
-  Iteration Scale: 1.01900005
-  Deposition Rate: 1.06299996
-  Erosion Rate: 0.200000003
-  Friction: 0.25
+  Num Iterations: 100
+  Num Droplets: 10000

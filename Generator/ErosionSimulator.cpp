@@ -2,6 +2,7 @@
 // Created by apgra on 10/25/2023.
 //
 
+#include <random>
 #include "ErosionSimulator.h"
 
 #define GRAVITY 9.81
@@ -64,23 +65,29 @@ glm::vec3 surfaceNormal(std::vector<std::vector<float>> &map, glm::ivec2 pos){
     return glm::normalize(norm);
 }
 
-glm::vec2 calculateGradient(std::vector<std::vector<float>> &map, ErosionSimulator::Particle &p){
-    auto& pos = p.pos;
-    auto& prevPos = p.prevPos;
+glm::vec2 calculateGradient(std::vector<std::vector<float>> &map, ErosionSimulator::Grid &pGrid, float u, float v){
+    auto tr =  pGrid.TopRight();
+    auto tl = pGrid.TopLeft();
+    auto br = pGrid.BottomRight();
+    auto bl = pGrid.BottomLeft();
 
-    float u = prevPos.x - pos.x;
-    float v = prevPos.y - pos.y;
+    glm::vec2 p1 = {
+            (map[br.x][br.y] - map[bl.x][bl.y]) * (1 - u),
+            (map[tl.x][tl.y] - map[bl.x][bl.y]) * (1 - v)
 
-    glm::vec2 p1(
-            (map[pos.x+1][pos.y] - map[pos.x][pos.y]) * (1 - v),
-            (map[pos.y][pos.y+1] - map[pos.x][pos.y]) * (1 - u)
-            );
-    glm::vec2 p2(
-            (map[pos.x+1][pos.y+1] - map[pos.x][pos.y+1]) * v,
-            (map[pos.x+1][pos.y+1] - map[pos.x-1][pos.y]) * u
-            );
+    };
+
+    glm::vec2 p2 = {
+            (map[tr.x][tr.y] - map[tl.x][tl.y]) * u,
+            (map[tr.x][tr.y] - map[br.x][br.y]) * v
+    };
 
     return p1 + p2;
+}
+
+float randMToN(float M, float N)
+{
+    return M + (rand() / ( RAND_MAX / (N-M) ) ) ;
 }
 
 void ErosionSimulator::SimulateErosion2D(std::vector<std::vector<float>> &map, ErosionConfig &config, int seed) {
@@ -89,9 +96,11 @@ void ErosionSimulator::SimulateErosion2D(std::vector<std::vector<float>> &map, E
     int mapWidth = map.size();
     int mapHeight = map[0].size();
 
+    srand(seed);
+
     //Initialize particles
     for(int i = 0; i < config.numDroplets; i++){
-        particles.emplace_back(glm::ivec2(rand() % mapWidth, rand() % mapHeight));
+        particles.emplace_back(glm::ivec2(randMToN(0, mapWidth), randMToN(0, mapHeight)));
     }
 
     for(int i = 0; i < config.numIterations; i++){
@@ -105,16 +114,24 @@ void ErosionSimulator::SimulateErosion2D(std::vector<std::vector<float>> &map, E
             }
 
             auto prevPos = p.prevPos;
-
             auto dir = p.dir;
 
-            p.dir = glm::normalize(dir * config.inertia - glm::vec2(GRAVITY * (1 - config.inertia)));
+            Grid pGrid = {
+                    glm::floor(p.pos),
+                    glm::ceil(p.pos)
+            };
+
+            //p.dir = glm::normalize(dir * config.inertia - glm::vec2(calculateGradient(map, pGrid, p.pos.x - p.prevPos.x, p.pos.y - p.prevPos.y) * (1 - config.inertia)));
+            p.dir = dir * config.inertia - glm::vec2(calculateGradient(map, pGrid, p.pos.x - p.prevPos.x, p.pos.y - p.prevPos.y) * (1 - config.inertia));
 
             p.prevPos = p.pos;
             p.pos += p.dir;
 
+
+
+
             //Positive if drop moved uphill, negative for downhill
-            float heightDiff = map[p.pos.x][p.pos.y] - map[prevPos.x][prevPos.y];
+            float heightDiff = map[pGrid.BottomLeft().x][pGrid.BottomLeft().y] - map[pGrid.TopRight().x][pGrid.TopRight().y];
 
 
             float c = fmax(-heightDiff, config.minSlope) * p.velocity * p.water * config.particleCapacity;
@@ -125,8 +142,9 @@ void ErosionSimulator::SimulateErosion2D(std::vector<std::vector<float>> &map, E
             p.velocity = sqrt(p.velocity * p.velocity + heightDiff * GRAVITY);
             p.water = p.water * (1 - config.evaporationRate);
 
-            map[p.pos.x][p.pos.y] -= c;
+            map[pGrid.BottomLeft().x][pGrid.BottomLeft().y] -= c;
 
+            p.stepsTaken++;
         }
     }
 }
