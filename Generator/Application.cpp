@@ -285,7 +285,7 @@ namespace WorldGenerator {
             ImGui::SliderFloat("Erosion Rate", &m_ErosionConfig.erosionRate, 0.01f, 1.0f);
             ImGui::SliderFloat("Deposition Rate", &m_ErosionConfig.depositionRate, 0.01f, 1.0f);
             ImGui::SliderFloat("Evaporation Rate", &m_ErosionConfig.evaporationRate, 0.01f, 1.0f);
-            ImGui::SliderFloat("Min Slope", &m_ErosionConfig.minSlope, 0.01f, 0.95f);
+            ImGui::SliderFloat("Min Slope-", &m_ErosionConfig.minSlope, 0.01f, 0.95f);
 
             ImGui::Spacing();
             ImGui::SliderFloat("Particle Capacity", &m_ErosionConfig.particleCapacity, 0.0f, 2.0f);
@@ -390,6 +390,15 @@ namespace WorldGenerator {
         //TODO: Save erosion settings to file
         config["Erosion Settings"]["Num Iterations"] = m_ErosionConfig.numIterations;
         config["Erosion Settings"]["Num Droplets"] = m_ErosionConfig.numDroplets;
+        config["Erosion Settings"]["Max Steps"] = m_ErosionConfig.maxSteps;
+
+        config["Erosion Settings"]["Deposition Rate"] = m_ErosionConfig.depositionRate;
+        config["Erosion Settings"]["Erosion Rate"] = m_ErosionConfig.erosionRate;
+        config["Erosion Settings"]["Evaporation Rate"] = m_ErosionConfig.evaporationRate;
+        config["Erosion Settings"]["Min Slope"] = m_ErosionConfig.minSlope;
+        config["Erosion Settings"]["Inertia"] = m_ErosionConfig.inertia;
+        config["Erosion Settings"]["Particle Capacity"] = m_ErosionConfig.particleCapacity;
+        config["Erosion Settings"]["Particle Radius"] = m_ErosionConfig.particleRadius;
 
 
         std::ofstream fout("config.yaml");
@@ -445,9 +454,17 @@ namespace WorldGenerator {
         dirLight.Specular.z = config["Light Settings"]["Directional Light"]["Specular"][2].as<float>();
 
 
-        //m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
-        //m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
-        //m_ErosionConfig.inertia = config["Erosion Settings"]["Inertia"].as<float>();
+        m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
+        m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
+        m_ErosionConfig.maxSteps = config["Erosion Settings"]["Max Steps"].as<int>();
+
+        m_ErosionConfig.depositionRate = config["Erosion Settings"]["Deposition Rate"].as<float>();
+        m_ErosionConfig.erosionRate = config["Erosion Settings"]["Erosion Rate"].as<float>();
+        m_ErosionConfig.evaporationRate = config["Erosion Settings"]["Evaporation Rate"].as<float>();
+        m_ErosionConfig.minSlope = config["Erosion Settings"]["Min Slope"].as<float>();
+        m_ErosionConfig.inertia = config["Erosion Settings"]["Inertia"].as<float>();
+        m_ErosionConfig.particleCapacity = config["Erosion Settings"]["Particle Capacity"].as<float>();
+        m_ErosionConfig.particleRadius = config["Erosion Settings"]["Particle Radius"].as<int>();
     }
 
 

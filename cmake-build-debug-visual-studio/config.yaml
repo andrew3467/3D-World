@@ -45,3 +45,11 @@ Light Settings:
 Erosion Settings:
   Num Iterations: 100
   Num Droplets: 10000
+  Max Steps: 100
+  Deposition Rate: 0.25
+  Erosion Rate: 0.25
+  Evaporation Rate: 0.25
+  Min Slope: 0.0500000007
+  Inertia: 0.5
+  Particle Capacity: 1
+  Particle Radius: 1
