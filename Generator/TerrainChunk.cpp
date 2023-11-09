@@ -10,7 +10,9 @@
 #include "ErosionSimulator.h"
 
 
-TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config, ErosionConfig* erosionConfig) : m_TerrainConfig(config), m_ErosionConfig(erosionConfig) {
+TerrainChunk::TerrainChunk(glm::vec3 pos, TerrainConfig *config, NoiseConfig* noiseConfig, ErosionConfig* erosionConfig)
+: m_TerrainConfig(config), m_ErosionConfig(erosionConfig), m_NoiseConfig(noiseConfig)
+{
     m_Mesh = std::make_unique<Mesh>();
     m_MeshRenderer = std::make_unique<MeshRenderer>(m_Mesh.get());
 
@@ -43,8 +45,13 @@ int TerrainChunk::indexFrom3D(glm::ivec3 v) {
 void TerrainChunk::createHeightMapMesh(bool erosionSim) {
     std::vector<Vertex> vertices;
     std::vector<unsigned int> indices;
-    std::vector<std::vector<float>> map =
-            HeightMapGenerator::GenerateHeightMap(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_TerrainConfig);
+    std::vector<std::vector<float>> map;
+
+    if(m_TerrainConfig->genType == HeightMap){
+        map = HeightMapGenerator::GenerateHeightMap(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_NoiseConfig, *m_TerrainConfig);
+    }else{
+        map = HeightMapGenerator::GenerateHeightMapfBm(glm::vec2(m_Transform.Position.x, m_Transform.Position.z), *m_NoiseConfig, *m_TerrainConfig);
+    }
 
     if(erosionSim){
         ErosionSimulator::SimulateErosion2D(map, *m_ErosionConfig, m_TerrainConfig->seed);
@@ -108,10 +115,10 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                 float noiseValue = 0.0f;
                 float frequency = 1.01f;
                 float amplitude = 1.0f;
-                for(int i = 0; i < m_TerrainConfig->octaves; i++){
-                    noiseValue += simplexNoise.noise((xPos + m_TerrainConfig->noiseOffset.x + m_Transform.Position.x) * m_TerrainConfig->noiseScale.x * frequency,
-                                                     (yPos + m_TerrainConfig->noiseOffset.y + m_Transform.Position.y) * m_TerrainConfig->noiseScale.y * frequency,
-                                                     (zPos + m_TerrainConfig->noiseOffset.z + m_Transform.Position.z) * m_TerrainConfig->noiseScale.x * frequency) * amplitude;
+                for(int i = 0; i < m_NoiseConfig->octaves; i++){
+                    noiseValue += simplexNoise.noise((xPos + m_NoiseConfig->noiseOffset.x + m_Transform.Position.x) * m_NoiseConfig->noiseScale.x * frequency,
+                                                     (yPos + m_NoiseConfig->noiseOffset.y + m_Transform.Position.y) * m_NoiseConfig->noiseScale.y * frequency,
+                                                     (zPos + m_NoiseConfig->noiseOffset.z + m_Transform.Position.z) * m_NoiseConfig->noiseScale.x * frequency) * amplitude;
 
                     frequency *= 2.0f;
                     amplitude *= 0.5f;
@@ -205,6 +212,9 @@ void TerrainChunk::createMarchingCubesMesh3D() {
 void TerrainChunk::createMesh(bool erosionSim){
     switch (m_TerrainConfig->genType) {
         case HeightMap:
+            createHeightMapMesh(erosionSim);
+            break;
+        case HeightMapfBm:
             createHeightMapMesh(erosionSim);
             break;
         case MarchingCube3D:

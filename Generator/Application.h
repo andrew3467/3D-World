@@ -53,6 +53,7 @@ namespace WorldGenerator {
 
         std::unique_ptr<Window> m_Window;
         TerrainConfig m_TerrainConfig;
+        NoiseConfig m_NoiseConfig;
         ErosionConfig m_ErosionConfig;
 
         int m_ViewDistance = 4;

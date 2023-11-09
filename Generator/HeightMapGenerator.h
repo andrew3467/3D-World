@@ -10,7 +10,8 @@
 
 class HeightMapGenerator {
 public:
-    static std::vector<std::vector<float>> GenerateHeightMap(glm::vec2 position, TerrainConfig& config);
+    static std::vector<std::vector<float>> GenerateHeightMap(glm::vec2 position, NoiseConfig& noiseConfig, TerrainConfig& terrainConfig);
+    static std::vector<std::vector<float>> GenerateHeightMapfBm(glm::vec2 position, NoiseConfig& noiseConfig, TerrainConfig& terrainConfig);
 };
 
 

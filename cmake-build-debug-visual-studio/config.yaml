@@ -7,29 +7,34 @@ Terrain Settings:
   Seed: 32450
   Size: 64
   Height: 2
-  Resolution: 0
+  Resolution: 1
   ISO Level: 0.5
   Color:
     - 0.329400003
     - 0.733299971
     - 0.192100003
+  Biomes:
+    - Name: Beach
+      Height: 0.5
 Noise Settings:
   Offsets:
-    - 3.10299993
+    - 3.0999999
     - 0
     - 0
   Noise Scale:
     - 1
     - 1.39999998
-  Lacunarity: 0.963
-  Persistence: 1.426
+  EXP: 2
+  Frequency: 2.81500006
+  Lacunarity: 1.74100006
+  Persistence: 0.800999999
   Octaves: 8
 Light Settings:
   Directional Light:
     Direction:
-      - -0.200000003
-      - -1
-      - -0.300000012
+      - -6.40700006
+      - -7.20699978
+      - 5.69999981
     Ambient:
       - 1
       - 1
@@ -43,13 +48,12 @@ Light Settings:
       - 0.25
       - 0.25
 Erosion Settings:
-  Num Iterations: 100
-  Num Droplets: 10000
-  Max Steps: 100
-  Deposition Rate: 0.25
-  Erosion Rate: 0.25
-  Evaporation Rate: 0.25
-  Min Slope: 0.0500000007
-  Inertia: 0.5
-  Particle Capacity: 1
-  Particle Radius: 1
+  Num Droplets: 100000
+  Max Steps: 64
+  Deposition Rate: 0.200000003
+  Erosion Rate: 0.699999988
+  Evaporation Rate: 0.0199999996
+  Min Slope: 0.00999999978
+  Inertia: 0.300000012
+  Particle Capacity: 8
+  Particle Radius: 4

@@ -6,15 +6,28 @@
 #define APPLICATION_TERRAINCHUNK_H
 
 
+
 #include <memory>
 #include "../Engine/Mesh.h"
 #include "../Engine/MeshRenderer.h"
+
 #include "../Engine/Transform.h"
 
 enum GenerationType {
     HeightMap = 0,
-    MarchingCube3D = 1
+    HeightMapfBm = 1,
+    MarchingCube3D = 2
 };
+
+struct Biome{
+    Biome() : name("New Biome"), height(0.5f) {
+
+    }
+
+    std::string name;
+    float height;
+};
+
 struct TerrainConfig {
     GenerationType genType = HeightMap;
 
@@ -23,19 +36,27 @@ struct TerrainConfig {
     int seed = 32450;
     int size = 4;
     int resolution = 0;
-    glm::vec3 noiseOffset = {0, 0, 0};
-    glm::vec2 noiseScale = {1.4f, 1.4f};
-    int octaves = 1;
-    float lacunarity = 1.0f;
-    float persistence = 1.0f;
+
+    std::vector<Biome> biomes;
 
     //Marching Cubes
     int height = 2;
     float isoLevel = 0.5f;;
 };
 
-struct ErosionConfig{
-    int numIterations = 10;
+struct NoiseConfig{
+    glm::vec3 noiseOffset = {0, 0, 0};
+    glm::vec2 noiseScale = {1.4f, 1.4f};
+    int octaves = 1;
+
+    int exp = 1;
+
+    float frequency = 1.0f;
+    float lacunarity = 1.0f;
+    float persistence = 1.0f;
+};
+
+struct ErosionConfig {
     int numDroplets = 50;
     int maxSteps = 100;
 
@@ -53,7 +74,7 @@ struct ErosionConfig{
 
 class TerrainChunk {
 public:
-    TerrainChunk(glm::vec3 pos, TerrainConfig* terrainConfig, ErosionConfig* erosionConfig);
+    TerrainChunk(glm::vec3 pos, TerrainConfig* terrainConfig, NoiseConfig* noiseConfig, ErosionConfig* erosionConfig);
     ~TerrainChunk();
 
 
@@ -74,7 +95,10 @@ public:
 
 private:
     TerrainConfig* m_TerrainConfig;
+    NoiseConfig* m_NoiseConfig;
     ErosionConfig* m_ErosionConfig;
+
+
     std::unique_ptr<Mesh> m_Mesh;
     std::unique_ptr<MeshRenderer> m_MeshRenderer;
     Transform m_Transform;

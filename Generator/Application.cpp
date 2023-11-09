@@ -13,6 +13,7 @@
 
 #include <yaml-cpp/yaml.h>
 #include <thread>
+#include <imgui_stdlib.h>
 
 
 namespace WorldGenerator {
@@ -165,7 +166,7 @@ namespace WorldGenerator {
     }
 
     void Application::createNewChunk(glm::ivec2 chunkCoord) {
-        m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig, &m_ErosionConfig);
+        m_TerrainChunks[chunkCoord] = std::make_unique<TerrainChunk>(glm::vec3(chunkCoord.x, 0.0f, chunkCoord.y), &m_TerrainConfig, &m_NoiseConfig, &m_ErosionConfig);
     }
 
     void Application::updateFPS() {
@@ -243,21 +244,36 @@ namespace WorldGenerator {
             ImGui::Indent();
 
             int genType = m_TerrainConfig.genType;
-            const char* genTypeNames[3] = {"Height Map", "Marching Cubes 3D"};
-            const char* genTypeName = (genType >= 0 && genType < 2) ? genTypeNames[genType] : "Unknown";
+            const char* genTypeNames[3] = {"Height Map", "Height Map fBm", "Marching Cubes 3D"};
+            const char* genTypeName = (genType >= 0 && genType < 3) ? genTypeNames[genType] : "Unknown";
 
-            updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 1, genTypeName);
+            updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 2, genTypeName);
             updateMesh |= ImGui::SliderInt("Seed", &m_TerrainConfig.seed, 0, 32767);
             updateMesh |= ImGui::SliderInt("Terrain Size", &m_TerrainConfig.size, 2, 64);
             updateMesh |= ImGui::SliderInt("Resolution", &m_TerrainConfig.resolution, 0, 5);
 
             if(ImGui::CollapsingHeader("Noise Config")){
                 ImGui::Indent();
-                updateMesh |= ImGui::SliderFloat2("Noise Scale", &m_TerrainConfig.noiseScale.x, 0, 1);
-                updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_TerrainConfig.noiseOffset.x, -10.0f, 10.0f);
-                updateMesh |= ImGui::SliderInt("Octaves", &m_TerrainConfig.octaves, 1, 10);
-                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_TerrainConfig.lacunarity, 0.0f, 4.0f);
-                updateMesh |= ImGui::SliderFloat("Persistence", &m_TerrainConfig.persistence, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderFloat2("Noise Scale", &m_NoiseConfig.noiseScale.x, 0, 1);
+                updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_NoiseConfig.noiseOffset.x, -10.0f, 10.0f);
+                updateMesh |= ImGui::SliderInt("Octaves", &m_NoiseConfig.octaves, 1, 10);
+
+                updateMesh |= ImGui::SliderInt("EXP", &m_NoiseConfig.exp, 0.0f, 8.0f);
+
+                updateMesh |= ImGui::SliderFloat("Frequency", &m_NoiseConfig.frequency, 0.0f, 8.0f);
+                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_NoiseConfig.lacunarity, 0.0f, 4.0f);
+                updateMesh |= ImGui::SliderFloat("Persistence", &m_NoiseConfig.persistence, 0.0f, 1.0f);
+            }
+            if(ImGui::CollapsingHeader("Biome Config")){
+                if(ImGui::Button("Create Biome")){
+                    m_TerrainConfig.biomes.emplace_back();
+                }
+                for(auto& b : m_TerrainConfig.biomes){
+                    if(ImGui::CollapsingHeader(b.name.c_str())){
+                        ImGui::InputText("Name", &b.name);
+                        ImGui::SliderFloat("Height", &b.height, 0.0f, 1.0f);
+                    }
+                }
             }
 
 
@@ -277,7 +293,6 @@ namespace WorldGenerator {
             updateMesh |= ImGui::ColorPicker3("Ambient", &m_TerrainConfig.color.x);
         }
         if(ImGui::CollapsingHeader("Erosion Config")){
-            ImGui::InputInt("Num Iterations", &m_ErosionConfig.numIterations);
             ImGui::InputInt("Num Droplets", &m_ErosionConfig.numDroplets);
             ImGui::InputInt("Max Steps", &m_ErosionConfig.maxSteps);
 
@@ -356,17 +371,27 @@ namespace WorldGenerator {
         config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.y);
         config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.z);
 
-        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.x);
-        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.y);
-        config["Noise Settings"]["Offsets"].push_back(m_TerrainConfig.noiseOffset.z);
 
-        config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.x);
-        config["Noise Settings"]["Noise Scale"].push_back(m_TerrainConfig.noiseScale.y);
+        for(int i = 0; i < m_TerrainConfig.biomes.size(); i++){
+            config["Terrain Settings"]["Biomes"][i]["Name"] = m_TerrainConfig.biomes[i].name;
+            config["Terrain Settings"]["Biomes"][i]["Height"] = m_TerrainConfig.biomes[i].height;
+        }
 
-        config["Noise Settings"]["Lacunarity"] = m_TerrainConfig.lacunarity;
-        config["Noise Settings"]["Persistence"] = m_TerrainConfig.persistence;
 
-        config["Noise Settings"]["Octaves"] = m_TerrainConfig.octaves;
+        config["Noise Settings"]["Offsets"].push_back(m_NoiseConfig.noiseOffset.x);
+        config["Noise Settings"]["Offsets"].push_back(m_NoiseConfig.noiseOffset.y);
+        config["Noise Settings"]["Offsets"].push_back(m_NoiseConfig.noiseOffset.z);
+
+        config["Noise Settings"]["Noise Scale"].push_back(m_NoiseConfig.noiseScale.x);
+        config["Noise Settings"]["Noise Scale"].push_back(m_NoiseConfig.noiseScale.y);
+
+        config["Noise Settings"]["EXP"] = m_NoiseConfig.exp;
+
+        config["Noise Settings"]["Frequency"] = m_NoiseConfig.frequency;
+        config["Noise Settings"]["Lacunarity"] = m_NoiseConfig.lacunarity;
+        config["Noise Settings"]["Persistence"] = m_NoiseConfig.persistence;
+
+        config["Noise Settings"]["Octaves"] = m_NoiseConfig.octaves;
         
         
         //LIGHTS
@@ -387,8 +412,6 @@ namespace WorldGenerator {
         config["Light Settings"]["Directional Light"]["Specular"].push_back(dirLight.Specular.z);
 
 
-        //TODO: Save erosion settings to file
-        config["Erosion Settings"]["Num Iterations"] = m_ErosionConfig.numIterations;
         config["Erosion Settings"]["Num Droplets"] = m_ErosionConfig.numDroplets;
         config["Erosion Settings"]["Max Steps"] = m_ErosionConfig.maxSteps;
 
@@ -424,17 +447,24 @@ namespace WorldGenerator {
         m_TerrainConfig.color.z = config["Terrain Settings"]["Color"][2].as<float>();
 
 
-        m_TerrainConfig.noiseOffset.x = config["Noise Settings"]["Offsets"][0].as<float>();
-        m_TerrainConfig.noiseOffset.y = config["Noise Settings"]["Offsets"][1].as<float>();
-        m_TerrainConfig.noiseOffset.z = config["Noise Settings"]["Offsets"][2].as<float>();
+        //Read in biomes
+        
 
-        m_TerrainConfig.noiseScale.x = config["Noise Settings"]["Noise Scale"][0].as<float>();
-        m_TerrainConfig.noiseScale.y = config["Noise Settings"]["Noise Scale"][1].as<float>();
 
-        m_TerrainConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();
-        m_TerrainConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
+        m_NoiseConfig.noiseOffset.x = config["Noise Settings"]["Offsets"][0].as<float>();
+        m_NoiseConfig.noiseOffset.y = config["Noise Settings"]["Offsets"][1].as<float>();
+        m_NoiseConfig.noiseOffset.z = config["Noise Settings"]["Offsets"][2].as<float>();
 
-        m_TerrainConfig.octaves = config["Noise Settings"]["Octaves"].as<int>();
+        m_NoiseConfig.noiseScale.x = config["Noise Settings"]["Noise Scale"][0].as<float>();
+        m_NoiseConfig.noiseScale.y = config["Noise Settings"]["Noise Scale"][1].as<float>();
+
+        m_NoiseConfig.exp = config["Noise Settings"]["EXP"].as<float>();
+
+        m_NoiseConfig.frequency = config["Noise Settings"]["Frequency"].as<float>();
+        m_NoiseConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();
+        m_NoiseConfig.persistence = config["Noise Settings"]["Persistence"].as<float>();
+
+        m_NoiseConfig.octaves = config["Noise Settings"]["Octaves"].as<int>();
 
         //LIGHTS
         dirLight.Direction.x = config["Light Settings"]["Directional Light"]["Direction"][0].as<float>();
@@ -454,7 +484,6 @@ namespace WorldGenerator {
         dirLight.Specular.z = config["Light Settings"]["Directional Light"]["Specular"][2].as<float>();
 
 
-        m_ErosionConfig.numIterations = config["Erosion Settings"]["Num Iterations"].as<int>();
         m_ErosionConfig.numDroplets = config["Erosion Settings"]["Num Droplets"].as<int>();
         m_ErosionConfig.maxSteps = config["Erosion Settings"]["Max Steps"].as<int>();
 
