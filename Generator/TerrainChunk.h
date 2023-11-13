@@ -8,6 +8,7 @@
 
 
 #include <memory>
+#include <utility>
 #include "../Engine/Mesh.h"
 #include "../Engine/MeshRenderer.h"
 
@@ -26,12 +27,11 @@ struct Biome{
 
     std::string name;
     float height;
+    glm::vec3 color{0.0f};
 };
 
 struct TerrainConfig {
-    GenerationType genType = HeightMap;
-
-    glm::vec3 color = {0.3294f, 0.7333f, 0.1921f};
+    GenerationType genType = HeightMapfBm;
 
     int seed = 32450;
     int size = 4;
@@ -49,6 +49,7 @@ struct NoiseConfig{
     glm::vec2 noiseScale = {1.4f, 1.4f};
     int octaves = 1;
 
+    float heightMultiplier = 2.0f;
     int exp = 1;
 
     float frequency = 1.0f;

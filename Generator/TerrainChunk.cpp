@@ -73,7 +73,7 @@ void TerrainChunk::createHeightMapMesh(bool erosionSim) {
                     glm::vec3(xPos, map[x][z], zPos),
                     glm::vec3(0.0f, 0.0f, 0.0f),
                     glm::vec2((float)x / m_Size, (float)z / m_Size),
-                    m_TerrainConfig->color
+                    glm::vec3(1.0f, 1.0f, 1.0f)
                     );
 
             if (x < m_Size - 1 && z < m_Size - 1) {
@@ -178,7 +178,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_TerrainConfig->color);
+                                          glm::vec3(1.0f, 1.0f, 1.0f));
 
 
                     pos = interp(cornerOffsets[e10],
@@ -189,7 +189,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_TerrainConfig->color);
+                                          glm::vec3(1.0f, 1.0f, 1.0f));
 
                     pos = interp(cornerOffsets[e20],
                                  noiseValues[indexFrom3D(cubeCoords + cornerOffsets[e20])],
@@ -199,7 +199,7 @@ void TerrainChunk::createMarchingCubesMesh3D() {
                     vertices.emplace_back(pos,
                                           glm::vec3(0.0f, 0.0f, 0.0f),
                                           glm::vec2(0.0f, 1.0f),
-                                          m_TerrainConfig->color);
+                                          glm::vec3(1.0f, 1.0f, 1.0f));
                 }
             }
         }

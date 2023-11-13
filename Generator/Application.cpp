@@ -116,7 +116,15 @@ namespace WorldGenerator {
             Shaders::solid_lit->setPointLight(arrIndex, m_Lights[i]);
         }
 
-        Shaders::solid_lit->setVec3("baseColor", m_TerrainConfig.color);
+        Shaders::solid_lit->setInt("numBiomes", m_TerrainConfig.biomes.size());
+        for(int i = 0; i < m_TerrainConfig.biomes.size(); i++){
+            std::string arrIndex = std::to_string(i);
+            Shaders::solid_lit->setFloat("biomes[" + arrIndex + "].height", m_TerrainConfig.biomes[i].height);
+            Shaders::solid_lit->setVec3("biomes[" + arrIndex + "].color", m_TerrainConfig.biomes[i].color);
+        }
+
+        Shaders::solid_lit->setInt("exp", m_NoiseConfig.exp);
+        Shaders::solid_lit->setFloat("heightMultiplier", m_NoiseConfig.heightMultiplier);
 
         Shaders::solid_lit->setMat4("projection", m_Camera->projection(m_Window->getSize()));
         Shaders::solid_lit->setMat4("view", m_Camera->view());
@@ -258,7 +266,9 @@ namespace WorldGenerator {
                 updateMesh |= ImGui::SliderFloat3("Noise Offset", &m_NoiseConfig.noiseOffset.x, -10.0f, 10.0f);
                 updateMesh |= ImGui::SliderInt("Octaves", &m_NoiseConfig.octaves, 1, 10);
 
-                updateMesh |= ImGui::SliderInt("EXP", &m_NoiseConfig.exp, 0.0f, 8.0f);
+                //Don't need to update mesh, changes are made GPU side
+                ImGui::SliderInt("EXP", &m_NoiseConfig.exp, 0, 12);
+                ImGui::SliderFloat("Height Multiplier", &m_NoiseConfig.heightMultiplier, 0.0f, 20.0f);
 
                 updateMesh |= ImGui::SliderFloat("Frequency", &m_NoiseConfig.frequency, 0.0f, 8.0f);
                 updateMesh |= ImGui::SliderFloat("Lacunarity", &m_NoiseConfig.lacunarity, 0.0f, 4.0f);
@@ -267,11 +277,17 @@ namespace WorldGenerator {
             if(ImGui::CollapsingHeader("Biome Config")){
                 if(ImGui::Button("Create Biome")){
                     m_TerrainConfig.biomes.emplace_back();
+                    m_TerrainConfig.biomes[m_TerrainConfig.biomes.size()-1].name = std::string("Biome: " + std::to_string(m_TerrainConfig.biomes.size() + 1));
                 }
-                for(auto& b : m_TerrainConfig.biomes){
-                    if(ImGui::CollapsingHeader(b.name.c_str())){
-                        ImGui::InputText("Name", &b.name);
-                        ImGui::SliderFloat("Height", &b.height, 0.0f, 1.0f);
+                for(int i = 0; i < m_TerrainConfig.biomes.size(); i++){
+                    if(ImGui::CollapsingHeader(m_TerrainConfig.biomes[i].name.c_str())){
+                        if(ImGui::Button("Delete")){
+                            m_TerrainConfig.biomes.erase(m_TerrainConfig.biomes.begin() + i);
+                        }
+
+                        ImGui::InputText("Name", &m_TerrainConfig.biomes[i].name);
+                        ImGui::SliderFloat("Height", &m_TerrainConfig.biomes[i].height, 0.0f, 1.0f);
+                        ImGui::ColorPicker3("Color", &m_TerrainConfig.biomes[i].color.x);
                     }
                 }
             }
@@ -289,8 +305,6 @@ namespace WorldGenerator {
             }
 
             ImGui::Unindent();
-
-            updateMesh |= ImGui::ColorPicker3("Ambient", &m_TerrainConfig.color.x);
         }
         if(ImGui::CollapsingHeader("Erosion Config")){
             ImGui::InputInt("Num Droplets", &m_ErosionConfig.numDroplets);
@@ -367,14 +381,15 @@ namespace WorldGenerator {
         config["Terrain Settings"]["Resolution"] = m_TerrainConfig.resolution;
         config["Terrain Settings"]["ISO Level"] = m_TerrainConfig.isoLevel;
 
-        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.x);
-        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.y);
-        config["Terrain Settings"]["Color"].push_back(m_TerrainConfig.color.z);
 
-
+        config["Terrain Settings"]["Biomes"]["Count"] = m_TerrainConfig.biomes.size();
         for(int i = 0; i < m_TerrainConfig.biomes.size(); i++){
             config["Terrain Settings"]["Biomes"][i]["Name"] = m_TerrainConfig.biomes[i].name;
             config["Terrain Settings"]["Biomes"][i]["Height"] = m_TerrainConfig.biomes[i].height;
+
+            config["Terrain Settings"]["Biomes"][i]["Color"].push_back(m_TerrainConfig.biomes[i].color.x);
+            config["Terrain Settings"]["Biomes"][i]["Color"].push_back(m_TerrainConfig.biomes[i].color.y);
+            config["Terrain Settings"]["Biomes"][i]["Color"].push_back(m_TerrainConfig.biomes[i].color.z);
         }
 
 
@@ -386,6 +401,7 @@ namespace WorldGenerator {
         config["Noise Settings"]["Noise Scale"].push_back(m_NoiseConfig.noiseScale.y);
 
         config["Noise Settings"]["EXP"] = m_NoiseConfig.exp;
+        config["Noise Settings"]["Height Multiplier"] = m_NoiseConfig.heightMultiplier;
 
         config["Noise Settings"]["Frequency"] = m_NoiseConfig.frequency;
         config["Noise Settings"]["Lacunarity"] = m_NoiseConfig.lacunarity;
@@ -442,13 +458,17 @@ namespace WorldGenerator {
         m_TerrainConfig.isoLevel = config["Terrain Settings"]["ISO Level"].as<float>();
 
 
-        m_TerrainConfig.color.x = config["Terrain Settings"]["Color"][0].as<float>();
-        m_TerrainConfig.color.y = config["Terrain Settings"]["Color"][1].as<float>();
-        m_TerrainConfig.color.z = config["Terrain Settings"]["Color"][2].as<float>();
-
-
         //Read in biomes
-        
+        int biomeCnt = config["Terrain Settings"]["Biomes"]["Count"].as<int>();
+        m_TerrainConfig.biomes.resize(biomeCnt);
+        for(int i = 0; i < biomeCnt; i++){
+            m_TerrainConfig.biomes[i].name = config["Terrain Settings"]["Biomes"][i]["Name"].as<std::string>();
+            m_TerrainConfig.biomes[i].height = config["Terrain Settings"]["Biomes"][i]["Height"].as<float>();
+
+            m_TerrainConfig.biomes[i].color.x = config["Terrain Settings"]["Biomes"][i]["Color"][0].as<float>();
+            m_TerrainConfig.biomes[i].color.y = config["Terrain Settings"]["Biomes"][i]["Color"][1].as<float>();
+            m_TerrainConfig.biomes[i].color.z = config["Terrain Settings"]["Biomes"][i]["Color"][2].as<float>();
+        }
 
 
         m_NoiseConfig.noiseOffset.x = config["Noise Settings"]["Offsets"][0].as<float>();
@@ -458,7 +478,8 @@ namespace WorldGenerator {
         m_NoiseConfig.noiseScale.x = config["Noise Settings"]["Noise Scale"][0].as<float>();
         m_NoiseConfig.noiseScale.y = config["Noise Settings"]["Noise Scale"][1].as<float>();
 
-        m_NoiseConfig.exp = config["Noise Settings"]["EXP"].as<float>();
+        m_NoiseConfig.exp = config["Noise Settings"]["EXP"].as<int>();
+        m_NoiseConfig.heightMultiplier = config["Noise Settings"]["Height Multiplier"].as<float>();
 
         m_NoiseConfig.frequency = config["Noise Settings"]["Frequency"].as<float>();
         m_NoiseConfig.lacunarity = config["Noise Settings"]["Lacunarity"].as<float>();

@@ -10,6 +10,9 @@ uniform mat4 projection;
 uniform mat4 view;
 uniform mat4 model;
 
+uniform int exp;
+uniform float heightMultiplier;
+
 out VS_OUT {
     vec3 FragPos;
     vec3 Normal;
@@ -22,7 +25,7 @@ void main()
     vs_out.FragPos = vec3(model * vec4(aPos, 1.0));
     vs_out.Normal = aNormal;
     vs_out.UV = aTexCoord;
-    gl_Position = projection * view * model * vec4(aPos, 1.0);
+    gl_Position = projection * view * model * vec4(aPos.x, pow(aPos.y, exp) * heightMultiplier, aPos.z, 1.0);
 }
 
 
@@ -36,6 +39,7 @@ in VS_OUT {
 } fs_in;
 
 const int MAX_LIGHTS = 16;
+const int MAX_BIOMES = 16;
 
 struct PointLight{
     vec3 Position;
@@ -57,6 +61,11 @@ struct DirLight {
     vec3 specular;
 };
 
+struct Biome {
+    float height;
+    vec3 color;
+};
+
 
 out vec4 FragColor;
 
@@ -66,9 +75,10 @@ uniform int numLights;
 uniform PointLight pointLights[MAX_LIGHTS];
 uniform DirLight dirLight;
 
-uniform vec3 baseColor;
+uniform Biome biomes[MAX_BIOMES];
+uniform int numBiomes;
 
-vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir){
+vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir, vec3 baseColor){
     vec3 lightDir = normalize(-light.direction);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
@@ -82,7 +92,7 @@ vec3 calculateDirLight(DirLight light, vec3 normal, vec3 viewDir){
     return (ambient + diffuse + specular);
 
 }
-vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir){
+vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, vec3 baseColor){
     vec3 lightDir = normalize(light.Position - fragPos);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
@@ -103,14 +113,26 @@ vec3 calculatePointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewD
     return (ambient + diffuse + specular);
 }
 
+vec3 calculateBiomeColor(float yPos){
+    for(int i = 0; i < numBiomes; i++){
+        if(yPos < biomes[i].height){
+            return biomes[i].color;
+        }
+    }
+
+    return biomes[numBiomes-1].color;
+}
+
 void main() {
     vec3 norm = normalize(fs_in.Normal);
     vec3 viewDir = normalize(viewPos - fs_in.FragPos);
 
-    vec3 lighting = calculateDirLight(dirLight, norm, viewDir);
+    vec3 baseColor = calculateBiomeColor(fs_in.FragPos.y);
+
+    vec3 lighting = calculateDirLight(dirLight, norm, viewDir, baseColor);
 
     for (int i = 0; i < numLights; i++){
-        lighting += calculatePointLight(pointLights[i], norm, fs_in.FragPos, viewDir);
+        lighting += calculatePointLight(pointLights[i], norm, fs_in.FragPos, viewDir, baseColor);
     }
 
     vec3 result = baseColor * lighting;

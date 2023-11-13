@@ -44,6 +44,9 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMap(glm::vec2 
             maxValue = fmax(maxValue, noiseValue);
 
 
+
+
+
             map[x][z] = noiseValue;
         }
     }
@@ -61,7 +64,7 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMap(glm::vec2 
 }
 
 std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::vec2 position, NoiseConfig &noiseConfig, TerrainConfig& terrainConfig) {
-    float minValue = 0xFFF0000, maxValue = -0xFFF00000;
+    float minValue = 0xFFFF0000, maxValue = -0x10000;
 
     int resolution = std::pow(2, terrainConfig.resolution);
 
@@ -88,7 +91,11 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::ve
             float fre = 1.0f;
             float amplitude = 1.0f;
 
+            float div = 0.0f;
+
             for (int i = 0; i < noiseConfig.octaves; i++) {
+                div += amplitude;
+
                 glm::vec2 p = offsets[i] + position + glm::vec2(xPos / size, zPos / size);
                 noiseValue += amplitude * ((SimplexNoise::noise(p.x * fre, p.y * fre) + 1.0f) / 2.0f);
 
@@ -100,10 +107,19 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::ve
             minValue = fmin(minValue, noiseValue);
             maxValue = fmax(maxValue, noiseValue);
 
-            map[x][y] = pow(noiseValue, noiseConfig.exp);
+            map[x][y] = noiseValue;
         }
     }
 
+    //Apply exponent to normalized mapping
+    if(maxValue != minValue){
+        for(int z = 0; z < map[0].size(); z++){
+            for(int x = 0; x < map.size(); x++){
+                //map[x][z] = pow((map[x][z] + 1) / 2.0f, noiseConfig.exp);
+                map[x][z] = (map[x][z]-minValue)/(maxValue-minValue);
+            }
+        }
+    }
 
 
     return map;
