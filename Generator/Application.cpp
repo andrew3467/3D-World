@@ -271,8 +271,8 @@ namespace WorldGenerator {
                 ImGui::SliderFloat("Height Multiplier", &m_NoiseConfig.heightMultiplier, 0.0f, 20.0f);
 
                 updateMesh |= ImGui::SliderFloat("Frequency", &m_NoiseConfig.frequency, 0.0f, 8.0f);
-                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_NoiseConfig.lacunarity, 0.0f, 4.0f);
-                updateMesh |= ImGui::SliderFloat("Persistence", &m_NoiseConfig.persistence, 0.0f, 1.0f);
+                updateMesh |= ImGui::SliderFloat("Lacunarity", &m_NoiseConfig.lacunarity, 0.0f, 1.0f);
+                updateMesh |= ImGui::SliderFloat("Persistence", &m_NoiseConfig.persistence, 0.0f, 8.0f);
             }
             if(ImGui::CollapsingHeader("Biome Config")){
                 if(ImGui::Button("Create Biome")){

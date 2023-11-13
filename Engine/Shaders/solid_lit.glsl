@@ -38,6 +38,8 @@ in VS_OUT {
     vec2 UV;
 } fs_in;
 
+const float PI = 3.14159;
+
 const int MAX_LIGHTS = 16;
 const int MAX_BIOMES = 16;
 

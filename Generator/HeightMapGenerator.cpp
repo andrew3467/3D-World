@@ -32,8 +32,8 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMap(glm::vec2 
             float scale = 1;
             float weight = 1;
             for (int i = 0; i < noiseConfig.octaves; i++) {
-                glm::vec2 p = offsets[i] + position + glm::vec2(xPos / size, zPos / size) * scale;
-                noiseValue += SimplexNoise::noise(p.x, p.y) * weight;
+                glm::vec2 p = offsets[i] + position + glm::vec2(xPos, zPos) * scale;
+                noiseValue += 0.5f;//SimplexNoise::noise(p.x, p.y) * weight;
 
                 weight *= noiseConfig.persistence;
                 scale *= noiseConfig.lacunarity;
@@ -63,6 +63,37 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMap(glm::vec2 
     return map;
 }
 
+float fbm(glm::vec2 p, NoiseConfig &config, std::vector<glm::vec2> &offsets) {
+    float res = 0.0f;
+
+    float fre = 1.0f;
+    float amplitude = 1.0f;
+
+    for (int i = 0; i < config.octaves; i++) {
+        glm::vec2 q = offsets[i] + p;
+        res += amplitude * SimplexNoise::noise(q.x * fre, q.y * fre);
+
+        fre *= config.lacunarity;
+        amplitude *= config.persistence;
+    }
+
+    return res;
+}
+
+float pattern(glm::vec2 &p, NoiseConfig &config, std::vector<glm::vec2> &offsets) {
+    glm::vec2 q(
+                fbm(p + glm::vec2(0.0f, 0.0f), config, offsets),
+                fbm(p + glm::vec2(5.2f, 1.3f), config, offsets)
+            );
+
+    glm::vec2 r(
+                fbm(p + (q * glm::vec2(4.0f)) + glm::vec2(1.7f, 9.2f), config, offsets),
+                fbm(p + (q * glm::vec2(4.0f)) + glm::vec2(8.3, 2.8f), config, offsets)
+            );
+
+    return fbm(p + (r * glm::vec2(4.0f)), config, offsets);
+}
+
 std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::vec2 position, NoiseConfig &noiseConfig, TerrainConfig& terrainConfig) {
     float minValue = 0xFFFF0000, maxValue = -0x10000;
 
@@ -83,25 +114,10 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::ve
 
     for(int y = 0; y < size; y++) {
         for (int x = 0; x < size; x++) {
-            float xPos = x / (float) (resolution);
-            float zPos = y / (float) (resolution);
+            glm::vec2 pos( x / (float) (resolution),
+                            y / (float) (resolution));
 
-            float noiseValue = 0;
-
-            float fre = 1.0f;
-            float amplitude = 1.0f;
-
-            float div = 0.0f;
-
-            for (int i = 0; i < noiseConfig.octaves; i++) {
-                div += amplitude;
-
-                glm::vec2 p = offsets[i] + position + glm::vec2(xPos / size, zPos / size);
-                noiseValue += amplitude * ((SimplexNoise::noise(p.x * fre, p.y * fre) + 1.0f) / 2.0f);
-
-                fre *= noiseConfig.lacunarity;
-                amplitude *= noiseConfig.persistence;
-            }
+            float noiseValue = pattern(pos ,noiseConfig, offsets);
 
 
             minValue = fmin(minValue, noiseValue);
