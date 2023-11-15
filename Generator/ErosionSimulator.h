@@ -14,23 +14,22 @@ public:
     static void SimulateErosion2D(std::vector<std::vector<float>> &map, ErosionConfig& config, int seed);
 
     struct Particle{
-        Particle(glm::ivec2 p, float r) : pos(p), prevPos(pos), radius(r) {
+        Particle(glm::ivec2 p, float r, glm::vec2 d) : pos(p), prevPos(p), radius(r), dir(d) {
 
         }
 
-        bool active = true;
         int stepsTaken = 0;
 
-        glm::ivec2 pos;
-        glm::ivec2 prevPos;
-        glm::vec2 dir = glm::vec2(0.0f);
+        glm::vec2 prevPos;
+        glm::vec2 pos;
+
+        glm::vec2 dir;
+
+        float velocity = 0.0f;
+        float sediment = 0.0f;
+        float water = 0.0f;
 
         float radius;
-
-        float velocity = 1.0f;
-
-        float water = 1.0f;
-        float sediment = 0.0f;
     };
 };
 

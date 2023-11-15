@@ -252,7 +252,7 @@ namespace WorldGenerator {
             ImGui::Indent();
 
             int genType = m_TerrainConfig.genType;
-            const char* genTypeNames[3] = {"Height Map", "Height Map fBm", "Marching Cubes 3D"};
+            const char* genTypeNames[3] = {"Height Map", "Height Map fBm", "Noiseless"};
             const char* genTypeName = (genType >= 0 && genType < 3) ? genTypeNames[genType] : "Unknown";
 
             updateMesh |= ImGui::SliderInt("Generation Type", (int*)&m_TerrainConfig.genType, 0, 2, genTypeName);
@@ -297,13 +297,6 @@ namespace WorldGenerator {
                 ImGui::Indent();
             }
 
-            if(m_TerrainConfig.genType == MarchingCube3D && ImGui::CollapsingHeader("Marching Cubes Config")) {
-                ImGui::Indent();
-
-                updateMesh |= ImGui::SliderInt("Height", &m_TerrainConfig.height, 1, 16);
-                updateMesh |= ImGui::SliderFloat("Iso Surface", &m_TerrainConfig.isoLevel, 0.0f, 1.0f);
-            }
-
             ImGui::Unindent();
         }
         if(ImGui::CollapsingHeader("Erosion Config")){
@@ -317,7 +310,7 @@ namespace WorldGenerator {
             ImGui::SliderFloat("Min Slope-", &m_ErosionConfig.minSlope, 0.01f, 0.95f);
 
             ImGui::Spacing();
-            ImGui::SliderFloat("Particle Capacity", &m_ErosionConfig.particleCapacity, 0.0f, 2.0f);
+            ImGui::SliderInt("Particle Capacity", &m_ErosionConfig.particleCapacity, 0, 32);
             ImGui::SliderInt("Particle Radius", &m_ErosionConfig.particleRadius, 1, 10);
 
         }

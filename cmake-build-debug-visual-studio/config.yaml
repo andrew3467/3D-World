@@ -4,13 +4,13 @@ Viewer Settings:
     - 1
     - 1
 Terrain Settings:
-  Seed: 32450
-  Size: 30
+  Seed: 26699
+  Size: 48
   Height: 2
   Resolution: 1
   ISO Level: 0.5
   Biomes:
-    Count: 3
+    Count: 4
     0:
       Name: "Biome: 1"
       Height: 0.504999995
@@ -20,13 +20,20 @@ Terrain Settings:
         - 1
     1:
       Name: "Biome: 2"
-      Height: 0.870000005
+      Height: 0.851999998
       Color:
-        - 0.42632398
-        - 0.716346145
-        - 0.196306378
+        - 0.463596046
+        - 0.793269217
+        - 0.202131107
     2:
       Name: "Biome: 3"
+      Height: 0.939999998
+      Color:
+        - 0.28342852
+        - 0.740384579
+        - 0.138822109
+    3:
+      Name: "Biome: 4"
       Height: 1
       Color:
         - 1
@@ -34,17 +41,17 @@ Terrain Settings:
         - 1
 Noise Settings:
   Offsets:
-    - 0
+    - 2.41400003
     - 0
     - -3.33299994
   Noise Scale:
-    - 0.286000013
-    - 0.123000003
-  EXP: 11
-  Height Multiplier: 2.13000011
-  Frequency: 1.66600001
-  Lacunarity: 0.234999999
-  Persistence: 5.77699995
+    - 0.611999989
+    - 0.582000017
+  EXP: 12
+  Height Multiplier: 6.204
+  Frequency: 1.51800001
+  Lacunarity: 0.152999997
+  Persistence: 4.48099995
   Octaves: 8
 Light Settings:
   Directional Light:
@@ -65,12 +72,12 @@ Light Settings:
       - 0.25
       - 0.25
 Erosion Settings:
-  Num Droplets: 100000
-  Max Steps: 64
-  Deposition Rate: 0.200000003
-  Erosion Rate: 0.699999988
-  Evaporation Rate: 0.0199999996
-  Min Slope: 0.00999999978
-  Inertia: 0.300000012
-  Particle Capacity: 8
-  Particle Radius: 4
+  Num Droplets: 10000
+  Max Steps: 24
+  Deposition Rate: 0.100000001
+  Erosion Rate: 0.899999976
+  Evaporation Rate: 0.0125000002
+  Min Slope: 0.0500000007
+  Inertia: 0.0250000004
+  Particle Capacity: 32
+  Particle Radius: 2

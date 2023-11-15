@@ -4,6 +4,7 @@
 
 #include "HeightMapGenerator.h"
 #include "../external/Simplex/SimplexNoise.h"
+#include "ErosionSimulator.h"
 
 std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMap(glm::vec2 position, NoiseConfig& noiseConfig, TerrainConfig& terrainConfig) {
     float minValue = 0xFFF0000, maxValue = -0xFFF00000;
@@ -70,7 +71,7 @@ float fbm(glm::vec2 p, NoiseConfig &config, std::vector<glm::vec2> &offsets) {
     float amplitude = 1.0f;
 
     for (int i = 0; i < config.octaves; i++) {
-        glm::vec2 q = offsets[i] + p;
+        glm::vec2 q = (offsets[i] + p) * config.noiseScale;
         res += amplitude * SimplexNoise::noise(q.x * fre, q.y * fre);
 
         fre *= config.lacunarity;
@@ -108,7 +109,8 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::ve
     srand(terrainConfig.seed);
     std::vector<glm::vec2> offsets;
     for(int i = 0; i < noiseConfig.octaves; i++) {
-        offsets.emplace_back(rand(), rand());
+        glm::vec2 o = {rand(), rand()};
+        offsets.emplace_back(o + position);
     }
 
 
@@ -137,6 +139,28 @@ std::vector<std::vector<float>> HeightMapGenerator::GenerateHeightMapfBm(glm::ve
         }
     }
 
+
+    return map;
+}
+
+std::vector<std::vector<float>> HeightMapGenerator::GenerateNoiseless(TerrainConfig &config, ErosionConfig &erosionConfig) {
+    float minValue = 0xFFFF0000, maxValue = -0x10000;
+
+    int resolution = std::pow(2, config.resolution);
+
+    //Vertices per line: size + (res - 1) * (size - 1)
+    int size = config.size + ((resolution - 1) * (config.size - 1));
+
+    std::vector<std::vector<float>> map(size, std::vector<float>(size, 0.0f));
+
+
+    for(int z = 0; z < size; z++){
+        for(int x = 0; x < size; x++){
+            map[x][z] = 1.0f;
+        }
+    }
+
+    ErosionSimulator::SimulateErosion2D(map, erosionConfig, config.seed);
 
     return map;
 }

@@ -90,6 +90,48 @@ void TerrainChunk::createHeightMapMesh(bool erosionSim) {
 
     m_Mesh->updateMeshData(vertices, indices);
 }
+
+void TerrainChunk::createNoiseless() {
+    std::vector<Vertex> vertices;
+    std::vector<unsigned int> indices;
+    std::vector<std::vector<float>> map;
+
+    map = HeightMapGenerator::GenerateNoiseless(*m_TerrainConfig, *m_ErosionConfig);
+
+    int resolution = std::pow(2, m_TerrainConfig->resolution);
+
+    //Vertices per line: size + (res - 1) * (size - 1)
+    m_Size = m_TerrainConfig->size + ((resolution - 1) * (m_TerrainConfig->size - 1));
+
+    //Create Vertices
+    for(int z = 0, vertIndex = 0; z < m_Size; z++) {
+        for (int x = 0; x < m_Size; x++, vertIndex++) {
+            float xPos = x / (float) (resolution);
+            float zPos = z / (float) (resolution);
+
+            vertices.emplace_back(
+                    glm::vec3(xPos, map[x][z], zPos),
+                    glm::vec3(0.0f, 0.0f, 0.0f),
+                    glm::vec2((float)x / m_Size, (float)z / m_Size),
+                    glm::vec3(1.0f, 1.0f, 1.0f)
+            );
+
+            if (x < m_Size - 1 && z < m_Size - 1) {
+                indices.push_back(vertIndex);
+                indices.push_back(vertIndex + m_Size);
+                indices.push_back(vertIndex + m_Size + 1);
+
+                indices.push_back(vertIndex + m_Size + 1);
+                indices.push_back(vertIndex + 1);
+                indices.push_back(vertIndex);
+            }
+        }
+    }
+
+    m_Mesh->updateMeshData(vertices, indices);
+}
+
+#if 0
 void TerrainChunk::createMarchingCubesMesh3D() {
     std::vector<Vertex> vertices;
 
@@ -208,6 +250,8 @@ void TerrainChunk::createMarchingCubesMesh3D() {
     if (!vertices.empty())
         m_Mesh->updateMeshData(vertices);
 }
+#endif
+
 
 void TerrainChunk::createMesh(bool erosionSim){
     switch (m_TerrainConfig->genType) {
@@ -217,8 +261,8 @@ void TerrainChunk::createMesh(bool erosionSim){
         case HeightMapfBm:
             createHeightMapMesh(erosionSim);
             break;
-        case MarchingCube3D:
-            createMarchingCubesMesh3D();
+        case Noiseless:
+            createNoiseless();
             break;
     }
 }

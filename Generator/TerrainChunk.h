@@ -17,7 +17,7 @@
 enum GenerationType {
     HeightMap = 0,
     HeightMapfBm = 1,
-    MarchingCube3D = 2
+    Noiseless = 2
 };
 
 struct Biome{
@@ -68,7 +68,7 @@ struct ErosionConfig {
 
     float inertia = 0.5f;
 
-    float particleCapacity = 1.0f;
+    int particleCapacity = 1;
     int particleRadius = 1;
 };
 
@@ -106,6 +106,8 @@ private:
 
     int m_Size;
     int m_Height;
+
+    void createNoiseless();
 };
 
 
